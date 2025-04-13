@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Management System</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+</head>
+
+<body>
+    <header>
+        <div class="logo-section">
+            <div class="logo-icon">
+                <i class="fas fa-home"></i>
+            </div>
+            <div class="logo-text">
+                <h1>Home Manager</h1>
+                <p>Simplify your home finances</p>
+            </div>
+        </div>
+        <div class="user-controls">
+            <button id="exportDataBtn" class="icon-btn" title="Export Data">
+                <i class="fas fa-download"></i>
+            </button>
+            <button id="importDataBtn" class="icon-btn" title="Import Data">
+                <i class="fas fa-upload"></i>
+            </button>
+            <div class="theme-toggle">
+                <input type="checkbox" id="darkModeToggle" class="toggle-checkbox">
+                <label for="darkModeToggle" class="toggle-label">
+                    <i class="fas fa-sun"></i>
+                    <i class="fas fa-moon"></i>
+                    <span class="toggle-ball"></span>
+                </label>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="month-controller">
+            <div class="month-selection">
+                <select id="monthSelect" class="styled-select">
+                    <!-- Months will be dynamically added here -->
+                </select>
+                <button id="addNewMonthBtn" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add New Month
+                </button>
+            </div>
+            <div class="search-bar">
+                <input type="text" id="globalSearch" class="search-input"
+                    placeholder="Search members, bills, transactions...">
+                <button class="search-btn">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="month-tabs" id="monthTabs">
+            <!-- Month tabs will be dynamically added here -->
+        </div>
+
+        <div class="navigation-tabs">
+            <div class="tab-button active" data-tab="dashboard">
+                <i class="fas fa-chart-pie"></i>
+                <span>Dashboard</span>
+            </div>
+            <div class="tab-button" data-tab="members">
+                <i class="fas fa-users"></i>
+                <span>Members</span>
+            </div>
+            <div class="tab-button" data-tab="bills">
+                <i class="fas fa-file-invoice-dollar"></i>
+                <span>Bills</span>
+            </div>
+            <div class="tab-button" data-tab="transactions">
+                <i class="fas fa-exchange-alt"></i>
+                <span>Transactions</span>
+            </div>
+            <div class="tab-button" data-tab="settings">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </div>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div class="main-content visible" id="dashboardTab">
+            <div class="sidebar">
+                <div class="sidebar-section">
+                    <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+                    <div class="quick-actions">
+                        <button id="quickAddBillBtn" class="btn btn-primary btn-block">
+                            <i class="fas fa-file-invoice"></i> Add New Bill
+                        </button>
+                        <button id="quickAddMemberBtn" class="btn btn-secondary btn-block">
+                            <i class="fas fa-user-plus"></i> Add New Member
+                        </button>
+                        <button id="quickAddTransactionBtn" class="btn btn-accent btn-block">
+                            <i class="fas fa-money-bill-wave"></i> Add New Transaction
+                        </button>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3><i class="fas fa-users"></i> Member Balances</h3>
+                    <div id="memberStatusList" class="member-status-list">
+                        <!-- Member balances will be added here -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-area">
+                <div class="summary-header">
+                    <h2>Monthly Summary</h2>
+                    <div class="month-badge" id="currentMonthDisplay">April 2025</div>
+                </div>
+
+                <div class="dashboard-stats">
+                    <div class="stat-card">
+                        <div class="stat-icon color-primary">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Total Bills</h3>
+                            <p id="totalBillsAmount">$0.00</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon color-success">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Total Paid</h3>
+                            <p id="totalPaidAmount">$0.00</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon color-warning">
+                            <i class="fas fa-hand-holding-usd"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Outstanding</h3>
+                            <p id="outstandingAmount">$0.00</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon color-info">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Active Members</h3>
+                            <p id="activeMembers">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex-row">
+                    <div class="chart-container">
+                        <h3>Expense Distribution</h3>
+                        <canvas id="expensesChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Member Contributions</h3>
+                        <canvas id="memberContributionChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="summary-section">
+                    <div class="section-header">
+                        <h3><i class="fas fa-history"></i> Recent Transactions</h3>
+                        <a href="#" class="view-all" id="viewAllTransactions">View All</a>
+                    </div>
+                    <div id="recentTransactions" class="transaction-list">
+                        <!-- Recent transactions will be dynamically added here -->
+                    </div>
+                </div>
+
+                <div class="summary-section">
+                    <div class="section-header">
+                        <h3><i class="fas fa-calendar-alt"></i> Upcoming Bills</h3>
+                        <a href="#" class="view-all" id="viewAllBills">View All</a>
+                    </div>
+                    <div id="upcomingBills" class="bills-list">
+                        <!-- Upcoming bills will be dynamically added here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Members Tab -->
+        <div class="main-content" id="membersTab" style="display: none;">
+            <div class="sidebar">
+                <div class="sidebar-section">
+                    <h3><i class="fas fa-search"></i> Search Members</h3>
+                    <div class="search-bar">
+                        <input type="text" id="memberSearch" class="search-input"
+                            placeholder="Search by name, room or phone...">
+                        <button class="search-btn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3><i class="fas fa-user-plus"></i> Add New Member</h3>
+                    <form id="addMemberForm" class="styled-form">
+                        <div class="form-group">
+                            <label for="memberName">Member Name</label>
+                            <input type="text" id="memberName" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="memberPhone">Phone Number (Optional)</label>
+                            <input type="text" id="memberPhone">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="memberRoom">Room Number (Optional)</label>
+                            <input type="text" id="memberRoom">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="memberJoinDate">Join Date</label>
+                            <input type="date" id="memberJoinDate" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="memberImage">Profile Image (Optional)</label>
+                            <input type="file" id="memberImage" accept="image/*" class="file-input">
+                            <div class="file-input-label">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <span>Choose a file</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="memberNote">Notes (Optional)</label>
+                            <textarea id="memberNote" rows="3"></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block">
+                            <i class="fas fa-user-plus"></i> Add Member
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="content-area">
+                <div id="membersListSection">
+                    <div class="content-header">
+                        <h2><i class="fas fa-users"></i> Member List</h2>
+                        <div class="view-toggle">
+                            <button class="toggle-btn active" data-view="grid">
+                                <i class="fas fa-th"></i>
+                            </button>
+                            <button class="toggle-btn" data-view="list">
+                                <i class="fas fa-list"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="member-list grid-view" id="membersList">
+                        <!-- Members will be dynamically added here -->
+                    </div>
+                </div>
+
+                <div id="memberDetailSection" style="display: none;">
+                    <button id="backToMembersList" class="btn btn-secondary back-button">
+                        <i class="fas fa-arrow-left"></i> Back to List
+                    </button>
+
+                    <div class="member-detail-container">
+                        <!-- Member details will be dynamically added here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bills Tab -->
+        <div class="main-content" id="billsTab" style="display: none;">
+            <div class="sidebar">
+                <div class="sidebar-section">
+                    <h3><i class="fas fa-filter"></i> Bill Categories</h3>
+                    <div id="billCategories" class="category-list">
+                        <div class="category-item active" data-category="all">
+                            <i class="fas fa-th-list"></i> All Bills
+                        </div>
+                        <div class="category-item" data-category="rent">
+                            <i class="fas fa-home"></i> Rent
+                        </div>
+                        <div class="category-item" data-category="utility">
+                            <i class="fas fa-bolt"></i> Utilities
+                        </div>
+                        <div class="category-item" data-category="meal">
+                            <i class="fas fa-utensils"></i> Meal Costs
+                        </div>
+                        <div class="category-item" data-category="service">
+                            <i class="fas fa-hands-helping"></i> Services
+                        </div>
+                        <div class="category-item" data-category="other">
+                            <i class="fas fa-clipboard-list"></i> Others
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3><i class="fas fa-file-invoice"></i> Add New Bill</h3>
+                    <form id="addBillForm" class="styled-form">
+                        <div class="form-group">
+                            <label for="billCategory">Bill Category</label>
+                            <select id="billCategory" required>
+                                <option value="">Select a category</option>
+                                <option value="rent">Rent</option>
+                                <option value="utility">Utilities</option>
+                                <option value="meal">Meal Costs</option>
+                                <option value="service">Services</option>
+                                <option value="other">Others</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="billName">Bill Name</label>
+                            <input type="text" id="billName" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="billAmount">Amount ($)</label>
+                            <input type="number" id="billAmount" step="0.01" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="billDate">Date</label>
+                            <input type="date" id="billDate" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="billDueDate">Due Date (Optional)</label>
+                            <input type="date" id="billDueDate">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="billNote">Notes (Optional)</label>
+                            <textarea id="billNote" rows="3"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Applicable Members</label>
+                            <div id="memberCheckboxes" class="checkbox-group">
+                                <!-- Member checkboxes will be dynamically added here -->
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="billDistribution">Distribution Method</label>
+                            <select id="billDistribution">
+                                <option value="equal">Equal Split</option>
+                                <option value="custom">Custom Split</option>
+                                <option value="proportional">Proportional Split</option>
+                            </select>
+                        </div>
+
+                        <div id="customDistributionContainer" style="display: none;">
+                            <!-- Custom distribution fields will be dynamically added here -->
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block">
+                            <i class="fas fa-plus"></i> Add Bill
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="content-area">
+                <div class="content-header">
+                    <h2><i class="fas fa-file-invoice-dollar"></i> Bill List</h2>
+                    <div class="filters">
+                        <select id="billMonthFilter" class="styled-select">
+                            <option value="all">All Months</option>
+                            <!-- Months will be dynamically added here -->
+                        </select>
+                        <select id="billStatusFilter" class="styled-select">
+                            <option value="all">All Status</option>
+                            <option value="paid">Paid</option>
+                            <option value="pending">Pending</option>
+                        </select>
+                        <button id="addRecurringBillBtn" class="btn btn-secondary">
+                            <i class="fas fa-sync"></i> Recurring Bill
+                        </button>
+                    </div>
+                </div>
+
+                <div id="billsStats" class="stats-summary">
+                    <div class="stat-item">
+                        <div class="stat-label">Total Bills</div>
+                        <div class="stat-value" id="billsTotalCount">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Total Amount</div>
+                        <div class="stat-value" id="billsTotalAmount">$0.00</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Paid</div>
+                        <div class="stat-value" id="billsPaidAmount">$0.00</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Outstanding</div>
+                        <div class="stat-value" id="billsOutstandingAmount">$0.00</div>
+                    </div>
+                </div>
+
+                <div id="billsList" class="bills-list">
+                    <!-- Bills will be dynamically added here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Transactions Tab -->
+        <div class="main-content" id="transactionsTab" style="display: none;">
+            <div class="sidebar">
+                <div class="sidebar-section">
+                    <h3><i class="fas fa-money-bill-wave"></i> Add New Transaction</h3>
+                    <form id="addTransactionForm" class="styled-form">
+                        <div class="form-group">
+                            <label for="transactionType">Transaction Type</label>
+                            <select id="transactionType" required>
+                                <option value="payment">Payment Received</option>
+                                <option value="expense">Expense</option>
+                                <option value="deposit">Deposit</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="transactionMember">Member</label>
+                            <select id="transactionMember" required>
+                                <option value="">Select a member</option>
+                                <!-- Members will be dynamically added here -->
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="transactionAmount">Amount ($)</label>
+                            <input type="number" id="transactionAmount" step="0.01" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="transactionDate">Date</label>
+                            <input type="date" id="transactionDate" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="transactionNote">Notes (Optional)</label>
+                            <textarea id="transactionNote" rows="3"></textarea>
+                        </div>
+
+                        <div class="form-group" id="relatedBillsContainer" style="display: none;">
+                            <label>Related Bills</label>
+                            <div id="billCheckboxes" class="checkbox-group">
+                                <!-- Bill checkboxes will be dynamically added here -->
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block">
+                            <i class="fas fa-plus"></i> Add Transaction
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="content-area">
+                <div class="content-header">
+                    <h2><i class="fas fa-exchange-alt"></i> Transaction List</h2>
+                    <div class="filters">
+                        <select id="transactionMonthFilter" class="styled-select">
+                            <option value="all">All Months</option>
+                            <!-- Months will be dynamically added here -->
+                        </select>
+                        <select id="transactionTypeFilter" class="styled-select">
+                            <option value="all">All Types</option>
+                            <option value="payment">Payments</option>
+                            <option value="expense">Expenses</option>
+                            <option value="deposit">Deposits</option>
+                        </select>
+                        <select id="transactionMemberFilter" class="styled-select">
+                            <option value="all">All Members</option>
+                            <!-- Members will be dynamically added here -->
+                        </select>
+                    </div>
+                </div>
+
+                <div id="transactionsStats" class="stats-summary">
+                    <div class="stat-item">
+                        <div class="stat-label">Total Transactions</div>
+                        <div class="stat-value" id="transactionsTotalCount">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Payments</div>
+                        <div class="stat-value" id="transactionsPaymentAmount">$0.00</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Expenses</div>
+                        <div class="stat-value" id="transactionsExpenseAmount">$0.00</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Deposits</div>
+                        <div class="stat-value" id="transactionsDepositAmount">$0.00</div>
+                    </div>
+                </div>
+
+                <div id="transactionsList" class="transaction-list">
+                    <!-- Transactions will be dynamically added here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div class="main-content" id="settingsTab" style="display: none;">
+            <div class="sidebar">
+                <div class="sidebar-section">
+                    <h3><i class="fas fa-sliders-h"></i> Default Bill Settings</h3>
+                    <form id="defaultBillSettingsForm" class="styled-form">
+                        <div class="form-group">
+                            <label for="defaultWifiBill">Default WiFi Bill ($)</label>
+                            <input type="number" id="defaultWifiBill" step="0.01" value="45.00">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="defaultGasBill">Default Gas Bill ($)</label>
+                            <input type="number" id="defaultGasBill" step="0.01" value="35.00">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="defaultWasteBill">Default Waste Bill ($)</label>
+                            <input type="number" id="defaultWasteBill" step="0.01" value="12.50">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="defaultElectricityBill">Default Electricity Bill ($)</label>
+                            <input type="number" id="defaultElectricityBill" step="0.01" value="75.00">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="defaultSecurityBill">Default Security Bill ($)</label>
+                            <input type="number" id="defaultSecurityBill" step="0.01" value="25.00">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="defaultCleaningBill">Default Cleaning Bill ($)</label>
+                            <input type="number" id="defaultCleaningBill" step="0.01" value="40.00">
+                        </div>
+
+                        <div id="customDefaultBills">
+                            <!-- Custom default bills will be added here -->
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block">
+                            <i class="fas fa-save"></i> Save Settings
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="content-area">
+                <div class="settings-section">
+                    <div class="content-header">
+                        <h3><i class="fas fa-tags"></i> Custom Bill Categories</h3>
+                        <button id="addCustomCategoryBtn" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Add Category
+                        </button>
+                    </div>
+                    <div class="category-container">
+                        <form id="addCustomCategoryForm" class="styled-form" style="display: none;">
+                            <div class="form-inline">
+                                <div class="form-group">
+                                    <label for="customCategoryName">Category Name</label>
+                                    <input type="text" id="customCategoryName" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="customCategoryIcon">Icon</label>
+                                    <select id="customCategoryIcon">
+                                        <option value="fas fa-tag">Tag</option>
+                                        <option value="fas fa-lightbulb">Light Bulb</option>
+                                        <option value="fas fa-wifi">WiFi</option>
+                                        <option value="fas fa-water">Water</option>
+                                        <option value="fas fa-broom">Cleaning</option>
+                                        <option value="fas fa-car">Transportation</option>
+                                        <option value="fas fa-shopping-basket">Shopping</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Add</button>
+                            </div>
+                        </form>
+                        <div id="customCategoriesList" class="category-list">
+                            <!-- Custom categories will be dynamically added here -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <div class="content-header">
+                        <h3><i class="fas fa-database"></i> Data Management</h3>
+                    </div>
+                    <div class="data-management-container">
+                        <div class="data-action-buttons">
+                            <button id="exportData" class="btn btn-primary">
+                                <i class="fas fa-download"></i> Export Data
+                            </button>
+                            <button id="importData" class="btn btn-secondary">
+                                <i class="fas fa-upload"></i> Import Data
+                            </button>
+                            <button id="generateReport" class="btn btn-accent">
+                                <i class="fas fa-file-export"></i> Generate Report
+                            </button>
+                            <button id="clearData" class="btn btn-danger">
+                                <i class="fas fa-trash-alt"></i> Clear All Data
+                            </button>
+                        </div>
+                        <div class="data-backup-info">
+                            <h4><i class="fas fa-info-circle"></i> Data Backup Information</h4>
+                            <p>All data is automatically saved in your browser's local storage. However, for safety, we
+                                recommend regularly exporting your data as a backup. If you change browsers or clear
+                                your browser data, you will lose your information unless you have a backup.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <div class="content-header">
+                        <h3><i class="fas fa-palette"></i> Appearance</h3>
+                    </div>
+                    <div class="appearance-container">
+                        <div class="theme-colors">
+                            <h4>Theme Color</h4>
+                            <div class="color-options">
+                                <button class="color-option active" data-theme="default"
+                                    style="background-color: #3498db;"></button>
+                                <button class="color-option" data-theme="green"
+                                    style="background-color: #2ecc71;"></button>
+                                <button class="color-option" data-theme="purple"
+                                    style="background-color: #9b59b6;"></button>
+                                <button class="color-option" data-theme="orange"
+                                    style="background-color: #e67e22;"></button>
+                                <button class="color-option" data-theme="red"
+                                    style="background-color: #e74c3c;"></button>
+                            </div>
+                        </div>
+                        <div class="font-size-control">
+                            <h4>Font Size</h4>
+                            <div class="font-size-buttons">
+                                <button class="font-size-btn" data-size="small">Small</button>
+                                <button class="font-size-btn active" data-size="medium">Medium</button>
+                                <button class="font-size-btn" data-size="large">Large</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- Add Month Modal -->
+    <div id="addMonthModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-calendar-plus"></i> Add New Month</h2>
+                <span class="close">&times;</span>
+            </div>
+            <form id="addMonthForm" class="styled-form">
+                <div class="form-group">
+                    <label for="newMonthName">Month Name</label>
+                    <input type="text" id="newMonthName" required placeholder="Example: April 2025">
+                </div>
+
+                <div class="form-group">
+                    <label for="newMonthStartDate">Start Date</label>
+                    <input type="date" id="newMonthStartDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="newMonthEndDate">End Date</label>
+                    <input type="date" id="newMonthEndDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="copyFromMonth">Copy Settings From (Optional)</label>
+                    <select id="copyFromMonth">
+                        <option value="">None</option>
+                        <!-- Months will be dynamically added here -->
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="fas fa-plus"></i> Add Month
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Recurring Bill Modal -->
+    <div id="addRecurringBillModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-sync"></i> Add Recurring Bill</h2>
+                <span class="close">&times;</span>
+            </div>
+            <form id="addRecurringBillForm" class="styled-form">
+                <div class="form-group">
+                    <label for="recurringBillName">Bill Name</label>
+                    <input type="text" id="recurringBillName" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="recurringBillCategory">Bill Category</label>
+                    <select id="recurringBillCategory" required>
+                        <option value="rent">Rent</option>
+                        <option value="utility">Utilities</option>
+                        <option value="meal">Meal Costs</option>
+                        <option value="service">Services</option>
+                        <option value="other">Others</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="recurringBillAmount">Amount ($)</label>
+                    <input type="number" id="recurringBillAmount" step="0.01" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="recurringBillFrequency">Frequency</label>
+                    <select id="recurringBillFrequency" required>
+                        <option value="monthly">Monthly</option>
+                        <option value="bimonthly">Bimonthly</option>
+                        <option value="quarterly">Quarterly</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="recurringBillDay">Day of Month</label>
+                    <input type="number" id="recurringBillDay" min="1" max="31" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Applicable Members</label>
+                    <div id="recurringBillMemberCheckboxes" class="checkbox-group">
+                        <!-- Member checkboxes will be dynamically added here -->
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="recurringBillDistribution">Distribution Method</label>
+                    <select id="recurringBillDistribution">
+                        <option value="equal">Equal Split</option>
+                        <option value="custom">Custom Split</option>
+                        <option value="proportional">Proportional Split</option>
+                    </select>
+                </div>
+
+                <div id="recurringCustomDistributionContainer" style="display: none;">
+                    <!-- Custom distribution fields will be dynamically added here -->
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="fas fa-plus"></i> Add Recurring Bill
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Quick Add Bill Modal -->
+    <div id="quickAddBillModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-bolt"></i> Quick Add Bill</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="quick-bill-container">
+                <div class="quick-bill-item" data-bill="wifi">
+                    <div class="quick-bill-icon">
+                        <i class="fas fa-wifi"></i>
+                    </div>
+                    <div class="quick-bill-info">
+                        <h3>WiFi Bill</h3>
+                        <p>$<span id="quickWifiBillAmount">45.00</span></p>
+                    </div>
+                </div>
+                <div class="quick-bill-item" data-bill="gas">
+                    <div class="quick-bill-icon">
+                        <i class="fas fa-fire"></i>
+                    </div>
+                    <div class="quick-bill-info">
+                        <h3>Gas Bill</h3>
+                        <p>$<span id="quickGasBillAmount">35.00</span></p>
+                    </div>
+                </div>
+                <div class="quick-bill-item" data-bill="waste">
+                    <div class="quick-bill-icon">
+                        <i class="fas fa-trash"></i>
+                    </div>
+                    <div class="quick-bill-info">
+                        <h3>Waste Bill</h3>
+                        <p>$<span id="quickWasteBillAmount">12.50</span></p>
+                    </div>
+                </div>
+                <div class="quick-bill-item" data-bill="electricity">
+                    <div class="quick-bill-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <div class="quick-bill-info">
+                        <h3>Electricity Bill</h3>
+                        <p>$<span id="quickElectricityBillAmount">75.00</span></p>
+                    </div>
+                </div>
+                <div class="quick-bill-item" data-bill="cleaning">
+                    <div class="quick-bill-icon">
+                        <i class="fas fa-broom"></i>
+                    </div>
+                    <div class="quick-bill-info">
+                        <h3>Cleaning Bill</h3>
+                        <p>$<span id="quickCleaningBillAmount">40.00</span></p>
+                    </div>
+                </div>
+                <div class="quick-bill-item" data-bill="security">
+                    <div class="quick-bill-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="quick-bill-info">
+                        <h3>Security Bill</h3>
+                        <p>$<span id="quickSecurityBillAmount">25.00</span></p>
+                    </div>
+                </div>
+                <div class="quick-bill-item" data-bill="custom">
+                    <div class="quick-bill-icon">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                    <div class="quick-bill-info">
+                        <h3>Custom Bill</h3>
+                        <p>Create New</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Bill Details Modal -->
+    <div id="billDetailsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-file-invoice-dollar"></i> <span id="billDetailsTitle">Bill Details</span></h2>
+                <span class="close">&times;</span>
+            </div>
+            <div id="billDetailsContainer" class="details-container">
+                <!-- Bill details will be dynamically added here -->
+            </div>
+            <div class="modal-footer">
+                <button id="editBillBtn" class="btn btn-secondary">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+                <button id="deleteBillBtn" class="btn btn-danger">
+                    <i class="fas fa-trash-alt"></i> Delete
+                </button>
+                <button id="markBillPaidBtn" class="btn btn-success">
+                    <i class="fas fa-check-circle"></i> Mark as Paid
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Member Details Modal -->
+    <div id="memberDetailsModal" class="modal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h2><i class="fas fa-user-circle"></i> <span id="memberDetailsTitle">Member Details</span></h2>
+                <span class="close">&times;</span>
+            </div>
+            <div id="memberDetailsContainer" class="details-container">
+                <!-- Member details will be dynamically added here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Generate Report Modal -->
+    <div id="reportModal" class="modal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h2><i class="fas fa-file-export"></i> Generate Report</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="report-options">
+                <div class="form-group">
+                    <label for="reportType">Report Type</label>
+                    <select id="reportType">
+                        <option value="monthly">Monthly Summary</option>
+                        <option value="member">Member Statement</option>
+                        <option value="bills">Bills Summary</option>
+                        <option value="transactions">Transactions Log</option>
+                    </select>
+                </div>
+                <div class="form-group" id="reportMonthContainer">
+                    <label for="reportMonth">Month</label>
+                    <select id="reportMonth">
+                        <!-- Months will be dynamically added here -->
+                    </select>
+                </div>
+                <div class="form-group" id="reportMemberContainer" style="display: none;">
+                    <label for="reportMember">Member</label>
+                    <select id="reportMember">
+                        <!-- Members will be dynamically added here -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="reportFormat">Format</label>
+                    <select id="reportFormat">
+                        <option value="pdf">PDF</option>
+                        <option value="excel">Excel</option>
+                    </select>
+                </div>
+                <button id="generateReportBtn" class="btn btn-primary btn-block">
+                    <i class="fas fa-file-export"></i> Generate Report
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmationModal" class="modal">
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h2><i class="fas fa-exclamation-triangle"></i> <span id="confirmationTitle">Confirmation</span></h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="confirmation-message" id="confirmationMessage">
+                Are you sure you want to proceed with this action?
+            </div>
+            <div class="modal-footer">
+                <button id="confirmYesBtn" class="btn btn-danger">Yes</button>
+                <button id="confirmNoBtn" class="btn btn-secondary">No</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="notificationToast" class="toast">
+        <div class="toast-content">
+            <div class="toast-icon">
+                <i class="fas fa-info-circle"></i>
+            </div>
+            <div class="toast-message" id="toastMessage">
+                This is a notification message
+            </div>
+            <button class="toast-close">&times;</button>
+        </div>
+        <div class="toast-progress"></div>
+    </div>
+
+    <!-- JavaScript Files -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="rent.js"></script>
+    <script src="dashboard.js"></script>
+    <script src="members.js"></script>
+    <script src="bills.js"></script>
+    <script src="transactions.js"></script>
+    <script src="settings.js"></script>
+</body>
+
+</html>
