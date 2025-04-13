@@ -44,9 +44,7 @@
                 <select id="monthSelect" class="styled-select">
                     <!-- Months will be dynamically added here -->
                 </select>
-                <button id="addNewMonthBtn" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Add New Month
-                </button>
+
             </div>
             <div class="search-bar">
                 <input type="text" id="globalSearch" class="search-input"
@@ -657,44 +655,7 @@
         </div>
     </div>
 
-    <!-- Modals -->
-    <!-- Add Month Modal -->
-    <div id="addMonthModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2><i class="fas fa-calendar-plus"></i> Add New Month</h2>
-                <span class="close">&times;</span>
-            </div>
-            <form id="addMonthForm" class="styled-form">
-                <div class="form-group">
-                    <label for="newMonthName">Month Name</label>
-                    <input type="text" id="newMonthName" required placeholder="Example: April 2025">
-                </div>
 
-                <div class="form-group">
-                    <label for="newMonthStartDate">Start Date</label>
-                    <input type="date" id="newMonthStartDate" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="newMonthEndDate">End Date</label>
-                    <input type="date" id="newMonthEndDate" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="copyFromMonth">Copy Settings From (Optional)</label>
-                    <select id="copyFromMonth">
-                        <option value="">None</option>
-                        <!-- Months will be dynamically added here -->
-                    </select>
-                </div>
-
-                <button type="submit" class="btn btn-primary btn-block">
-                    <i class="fas fa-plus"></i> Add Month
-                </button>
-            </form>
-        </div>
-    </div>
 
     <!-- Add Recurring Bill Modal -->
     <div id="addRecurringBillModal" class="modal">

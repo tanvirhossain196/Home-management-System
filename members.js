@@ -77,6 +77,7 @@ function updateMembersList(searchTerm = "") {
   });
 }
 
+// Update showMemberDetails function in members.js
 function showMemberDetails(memberId) {
   const member = getMemberById(memberId);
   if (!member) return;
@@ -90,248 +91,267 @@ function showMemberDetails(memberId) {
   listSection.style.display = "none";
   detailSection.style.display = "block";
 
+  // Professional member profile with comprehensive history
   detailContainer.innerHTML = `
-        <div class="member-profile">
-            <div class="profile-pic">
-                ${
-                  member.image
-                    ? `<img src="${member.image}" alt="${member.name}" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">`
-                    : `<div class="avatar">${member.name.charAt(0)}</div>`
-                }
+    <div class="member-profile-card" style="background: linear-gradient(135deg, #ffffff, #f8f9fa); border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; margin-bottom: 24px; position: relative;">
+      <div class="profile-header" style="background: linear-gradient(135deg, #3498db, #2980b9); padding: 30px 20px; color: white; position: relative;">
+        <div class="profile-pic" style="position: relative; width: 120px; height: 120px; margin: 0 auto; border-radius: 50%; border: 5px solid white; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+          ${
+            member.image
+              ? `<img src="${member.image}" alt="${member.name}" style="width: 100%; height: 100%; object-fit: cover;">`
+              : `<div class="avatar" style="width: 100%; height: 100%; background: linear-gradient(135deg, #3498db, #8e44ad); display: flex; align-items: center; justify-content: center; font-size: 48px; font-weight: bold; color: white;">${member.name.charAt(
+                  0
+                )}</div>`
+          }
+        </div>
+        <h2 style="text-align: center; margin-top: 15px; font-size: 24px; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">${
+          member.name
+        }</h2>
+        <div class="member-tags" style="display: flex; justify-content: center; gap: 10px; margin-top: 8px;">
+          <span style="background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 20px; font-size: 12px;">
+            <i class="fas fa-home" style="margin-right: 5px;"></i> Room ${
+              member.room || "N/A"
+            }
+          </span>
+          <span style="background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 20px; font-size: 12px;">
+            <i class="fas fa-phone" style="margin-right: 5px;"></i> ${
+              member.phone || "N/A"
+            }
+          </span>
+        </div>
+      </div>
+      
+      <div class="profile-stats" style="display: flex; justify-content: space-around; padding: 20px; border-bottom: 1px solid #eee;">
+        <div class="stat-item" style="text-align: center;">
+          <div style="font-size: 24px; font-weight: bold; color: #3498db;">${calculateTotalBills(
+            memberId
+          ).toFixed(1)}</div>
+          <div style="color: #7f8c8d; font-size: 14px;">Total Bills</div>
+        </div>
+        <div class="stat-item" style="text-align: center;">
+          <div style="font-size: 24px; font-weight: bold; color: #2ecc71;">${calculateTotalPayments(
+            memberId
+          ).toFixed(1)}</div>
+          <div style="color: #7f8c8d; font-size: 14px;">Total Paid</div>
+        </div>
+        <div class="stat-item" style="text-align: center;">
+          <div style="font-size: 24px; font-weight: bold; color: ${
+            calculateTotalBalance(memberId) >= 0 ? "#2ecc71" : "#e74c3c"
+          };">${calculateTotalBalance(memberId).toFixed(1)}</div>
+          <div style="color: #7f8c8d; font-size: 14px;">Balance</div>
+        </div>
+      </div>
+      
+      <div class="profile-info" style="padding: 20px;">
+        <div style="margin-bottom: 12px;">
+          <span style="display: block; font-size: 14px; color: #7f8c8d; margin-bottom: 4px;">Member Since</span>
+          <div style="font-size: 16px; display: flex; align-items: center;">
+            <i class="fas fa-calendar-alt" style="color: #3498db; margin-right: 8px;"></i>
+            ${formatDate(member.joinDate)}
+          </div>
+        </div>
+        
+        ${
+          member.note
+            ? `
+            <div style="margin-bottom: 12px;">
+              <span style="display: block; font-size: 14px; color: #7f8c8d; margin-bottom: 4px;">Notes</span>
+              <div style="font-size: 16px; display: flex; align-items: start;">
+                <i class="fas fa-sticky-note" style="color: #3498db; margin-right: 8px; margin-top: 3px;"></i>
+                <span>${member.note}</span>
+              </div>
             </div>
-            <div class="profile-info">
-                <h2>${member.name}</h2>
-                <p>Phone: ${member.phone || "N/A"}</p>
-                <p>Room: ${member.room || "N/A"}</p>
-                <p>Join Date: ${formatDate(member.joinDate)}</p>
-                ${
-                  member.note
-                    ? `<p>Note: ${member.note}</p>`
-                    : "<p>Note: None</p>"
-                }
-            </div>
-        </div>
-        <div class="bills-history">
-            <h3>Monthly Financial Summary</h3>
-            ${generateMemberFinancialHistory(memberId)}
-        </div>
-        <div class="actions">
-            <button onclick="editMember(${memberId})" class="btn btn-primary">Edit Member</button>
-            <button onclick="deleteMember(${memberId})" class="btn btn-danger">Delete Member</button>
-        </div>
-    `;
+            `
+            : ""
+        }
+      </div>
+    </div>
+
+    <div class="member-financial-history" style="margin-bottom: 24px;">
+      <h3 style="position: relative; font-size: 18px; margin-bottom: 20px; padding-bottom: 10px; color: #2c3e50;">
+        <i class="fas fa-chart-line" style="color: #3498db; margin-right: 8px;"></i>
+        Financial History
+        <span style="position: absolute; bottom: 0; left: 0; width: 50px; height: 3px; background: linear-gradient(90deg, #3498db, #2ecc71);"></span>
+      </h3>
+      
+      <div class="financial-cards">
+        ${generateMemberFinancialSummary(memberId)}
+      </div>
+    </div>
+    
+    <div class="monthly-details-tabs">
+      <h3 style="position: relative; font-size: 18px; margin-bottom: 20px; padding-bottom: 10px; color: #2c3e50;">
+        <i class="fas fa-calendar-alt" style="color: #3498db; margin-right: 8px;"></i>
+        Monthly Details
+        <span style="position: absolute; bottom: 0; left: 0; width: 50px; height: 3px; background: linear-gradient(90deg, #3498db, #9b59b6);"></span>
+      </h3>
+      
+      <div class="monthly-tab-container">
+        ${generateMonthlyTabs(memberId)}
+      </div>
+    </div>
+    
+    <div class="actions" style="display: flex; gap: 12px; margin-top: 30px;">
+      <button onclick="editMember(${memberId})" class="btn btn-primary" style="background: linear-gradient(to right, #3498db, #2980b9); border: none; padding: 10px 20px; border-radius: 50px; color: white; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px;">
+        <i class="fas fa-user-edit"></i> Edit Member
+      </button>
+      <button onclick="deleteMember(${memberId})" class="btn btn-danger" style="background: linear-gradient(to right, #e74c3c, #c0392b); border: none; padding: 10px 20px; border-radius: 50px; color: white; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px;">
+        <i class="fas fa-user-minus"></i> Delete Member
+      </button>
+    </div>
+  `;
+
+  // Initialize tabs interactivity after adding to DOM
+  initializeMonthlyTabs();
 }
-
-function generateMemberFinancialHistory(memberId) {
-  const details = memberMonthDetails[memberId] || {};
-  return months
-    .map((month) => {
-      const monthDetails = details[month.value] || {
-        bills: [],
-        transactions: [],
-        balance: 0,
-        dues: 0,
-      };
-      if (!monthDetails.bills.length && !monthDetails.transactions.length)
-        return "";
-
-      const totalOwed = monthDetails.bills.reduce((sum, bill) => {
-        const share =
-          bill.distribution === "equal"
-            ? bill.amount / bill.memberIds.length
-            : bill.customDistribution?.find((d) => d.memberId === memberId)
-                ?.amount || 0;
-        return sum + share;
-      }, 0);
-
-      return `
-            <div class="month-card">
-                <div class="month-card-header">${month.name}</div>
-                <div class="month-card-body">
-                    <h4>Bills Assigned</h4>
-                    ${
-                      monthDetails.bills.length
-                        ? monthDetails.bills
-                            .map((bill) => {
-                              const share =
-                                bill.distribution === "equal"
-                                  ? bill.amount / bill.memberIds.length
-                                  : bill.customDistribution?.find(
-                                      (d) => d.memberId === memberId
-                                    )?.amount || 0;
-                              const paid = bill.paidBy
-                                .filter((p) => p.memberId === memberId)
-                                .reduce((sum, p) => sum + p.amount, 0);
-                              const due = share - paid;
-                              return `
-                                    <div class="expense-item">
-                                        <span class="expense-name">${
-                                          bill.name
-                                        }</span>
-                                        <span>Owed: ${share.toFixed(
-                                          1
-                                        )} USD</span>
-                                        <span>Paid: ${paid.toFixed(
-                                          1
-                                        )} USD</span>
-                                        <span class="${
-                                          due <= 0 ? "positive" : "negative"
-                                        }">Due: ${due.toFixed(1)} USD</span>
-                                        <span class="${
-                                          bill.paidStatus
-                                            ? "positive"
-                                            : "negative"
-                                        }">
-                                            ${
-                                              bill.paidStatus
-                                                ? "Paid"
-                                                : "Pending"
-                                            }
-                                        </span>
-                                        <small>Date: ${formatDate(
-                                          bill.date
-                                        )}</small>
-                                        ${
-                                          bill.dueDate
-                                            ? `<small>Due: ${formatDate(
-                                                bill.dueDate
-                                              )}</small>`
-                                            : ""
-                                        }
-                                    </div>
-                                `;
-                            })
-                            .join("")
-                        : "<p>No bills assigned.</p>"
-                    }
-                    <h4>Transactions</h4>
-                    ${
-                      monthDetails.transactions.length
-                        ? monthDetails.transactions
-                            .map(
-                              (t) => `
-                                    <div class="expense-item">
-                                        <span class="expense-name">${
-                                          {
-                                            payment: "Payment",
-                                            expense: "Expense",
-                                            deposit: "Deposit",
-                                          }[t.type] || t.type
-                                        }</span>
-                                        <span>${t.amount.toFixed(1)} USD</span>
-                                        <small>Date: ${formatDate(
-                                          t.date
-                                        )}</small>
-                                        ${
-                                          t.note
-                                            ? `<small>Note: ${t.note}</small>`
-                                            : ""
-                                        }
-                                        ${
-                                          t.billIds?.length
-                                            ? `<small>Bills: ${t.billIds
-                                                .map(
-                                                  (id) =>
-                                                    bills.find(
-                                                      (b) => b.id === id
-                                                    )?.name || "Unknown"
-                                                )
-                                                .join(", ")}</small>`
-                                            : ""
-                                        }
-                                    </div>
-                                `
-                            )
-                            .join("")
-                        : "<p>No transactions.</p>"
-                    }
-                    <h4>Summary</h4>
-                    <p>Total Owed: ${totalOwed.toFixed(1)} USD</p>
-                    <p>Total Paid: ${monthDetails.transactions
-                      .filter((t) => t.type === "payment")
-                      .reduce((sum, t) => sum + t.amount, 0)
-                      .toFixed(1)} USD</p>
-                    <p class="${
-                      monthDetails.dues <= 0 ? "positive" : "negative"
-                    }">Total Due: ${monthDetails.dues.toFixed(1)} USD</p>
-                    <p class="${
-                      monthDetails.balance >= 0 ? "positive" : "negative"
-                    }">Balance: ${monthDetails.balance.toFixed(1)} USD</p>
-                </div>
-            </div>
-        `;
-    })
-    .join("");
-}
-
 function editMember(memberId) {
   const member = getMemberById(memberId);
   if (!member) return;
 
   const editModal = document.createElement("div");
   editModal.className = "modal";
+  editModal.style.zIndex = "1050";
+
+  // Compact, professional modal design
   editModal.innerHTML = `
-        <div class="modal-content">
-            <span class="close">×</span>
-            <h2>Edit Member</h2>
-            <form id="editMemberForm">
-                <div class="form-group">
-                    <label for="editMemberName">Name</label>
-                    <input type="text" id="editMemberName" value="${
-                      member.name
-                    }" required>
-                </div>
-                <div class="form-group">
-                    <label for="editMemberPhone">Phone</label>
-                    <input type="text" id="editMemberPhone" value="${
-                      member.phone || ""
-                    }">
-                </div>
-                <div class="form-group">
-                    <label for="editMemberRoom">Room</label>
-                    <input type="text" id="editMemberRoom" value="${
-                      member.room || ""
-                    }">
-                </div>
-                <div class="form-group">
-                    <label for="editMemberJoinDate">Join Date</label>
-                    <input type="date" id="editMemberJoinDate" value="${
-                      member.joinDate
-                    }" required>
-                </div>
-                <div class="form-group">
-                    <label for="editMemberNote">Note</label>
-                    <textarea id="editMemberNote">${
-                      member.note || ""
-                    }</textarea>
-                </div>
-                <div class="form-group">
-                    <label for="editMemberImage">Profile Picture</label>
-                    <input type="file" id="editMemberImage" accept="image/*">
-                    ${
-                      member.image
-                        ? `<img src="${member.image}" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">`
-                        : ""
-                    }
-                </div>
-                <button type="submit" class="btn btn-primary">Update Member</button>
-            </form>
+    <div class="modal-content" style="border-radius: 12px; border: none; max-width: 420px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); overflow: hidden; padding: 0;">
+      <!-- Header -->
+      <div style="background: #3498db; padding: 15px 20px; color: white; position: relative; display: flex; align-items: center; gap: 10px;">
+        <i class="fas fa-user-edit" style="font-size: 18px;"></i>
+        <h2 style="margin: 0; font-size: 18px; font-weight: 600;">Edit Member</h2>
+        <span class="close" style="position: absolute; top: 12px; right: 15px; font-size: 20px; color: white; cursor: pointer;">&times;</span>
+      </div>
+      
+      <form id="editMemberForm" style="padding: 15px;">
+        <!-- Name field -->
+        <div class="form-group" style="margin-bottom: 15px;">
+          <label style="display: block; font-weight: 500; margin-bottom: 5px; color: #2c3e50; font-size: 14px;">Name</label>
+          <div style="position: relative;">
+            <i class="fas fa-user" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #3498db;"></i>
+            <input type="text" id="editMemberName" value="${
+              member.name
+            }" required style="width: 100%; padding: 10px 10px 10px 35px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+          </div>
         </div>
-    `;
+        
+        <!-- Phone field -->
+        <div class="form-group" style="margin-bottom: 15px;">
+          <label style="display: block; font-weight: 500; margin-bottom: 5px; color: #2c3e50; font-size: 14px;">Phone</label>
+          <div style="position: relative;">
+            <i class="fas fa-phone" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #27ae60;"></i>
+            <input type="text" id="editMemberPhone" value="${
+              member.phone || ""
+            }" style="width: 100%; padding: 10px 10px 10px 35px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+          </div>
+        </div>
+        
+        <!-- Room field -->
+        <div class="form-group" style="margin-bottom: 15px;">
+          <label style="display: block; font-weight: 500; margin-bottom: 5px; color: #2c3e50; font-size: 14px;">Room</label>
+          <div style="position: relative;">
+            <i class="fas fa-home" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #9b59b6;"></i>
+            <input type="text" id="editMemberRoom" value="${
+              member.room || ""
+            }" style="width: 100%; padding: 10px 10px 10px 35px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+          </div>
+        </div>
+        
+        <!-- Join Date field -->
+        <div class="form-group" style="margin-bottom: 15px;">
+          <label style="display: block; font-weight: 500; margin-bottom: 5px; color: #2c3e50; font-size: 14px;">Join Date</label>
+          <div style="position: relative;">
+            <i class="fas fa-calendar-alt" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #e74c3c;"></i>
+            <input type="date" id="editMemberJoinDate" value="${
+              member.joinDate
+            }" required style="width: 100%; padding: 10px 10px 10px 35px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+          </div>
+        </div>
+        
+        <!-- Note field -->
+        <div class="form-group" style="margin-bottom: 15px;">
+          <label style="display: block; font-weight: 500; margin-bottom: 5px; color: #2c3e50; font-size: 14px;">Note</label>
+          <div style="position: relative;">
+            <i class="fas fa-sticky-note" style="position: absolute; left: 10px; top: 12px; color: #f39c12;"></i>
+            <textarea id="editMemberNote" style="width: 100%; padding: 10px 10px 10px 35px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; min-height: 60px; resize: vertical;">${
+              member.note || ""
+            }</textarea>
+          </div>
+        </div>
+        
+        <!-- Profile Picture field with preview -->
+        <div class="form-group" style="margin-bottom: 15px;">
+          <label style="display: block; font-weight: 500; margin-bottom: 5px; color: #2c3e50; font-size: 14px;">Profile Picture</label>
+          <div style="display: flex; gap: 15px; align-items: center;">
+            <div style="flex: 3;">
+              <div style="position: relative; overflow: hidden; border-radius: 6px; border: 1px dashed #3498db; padding: 8px; text-align: center; cursor: pointer; background: #f8f9fa;">
+                <input type="file" id="editMemberImage" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;">
+                <i class="fas fa-cloud-upload-alt" style="font-size: 16px; color: #3498db; margin-bottom: 4px;"></i>
+                <div style="font-size: 12px; color: #7f8c8d;">Click to choose</div>
+                <div id="fileNameDisplay" style="font-size: 11px; color: #3498db; margin-top: 3px;">No file chosen</div>
+              </div>
+            </div>
+            
+            <div style="flex: 1; display: flex; justify-content: center;">
+              <div id="imagePreviewContainer" style="width: 70px; height: 70px; border-radius: 50%; overflow: hidden; background-color: #3498db; display: flex; align-items: center; justify-content: center; color: white; font-size: 28px; font-weight: bold;">
+                ${
+                  member.image
+                    ? `<img src="${member.image}" alt="${member.name}" id="imagePreview" style="width: 100%; height: 100%; object-fit: cover;">`
+                    : member.name.charAt(0).toUpperCase()
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Submit button -->
+        <button type="submit" style="width: 100%; padding: 12px; border: none; border-radius: 6px; background: #3498db; color: white; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 5px;">
+          <i class="fas fa-save"></i> Update Member
+        </button>
+      </form>
+    </div>
+  `;
 
   document.body.appendChild(editModal);
   editModal.style.display = "block";
 
-  editModal
-    .querySelector("#editMemberForm")
+  // Handle file selection display
+  const fileInput = document.getElementById("editMemberImage");
+  const fileNameDisplay = document.getElementById("fileNameDisplay");
+  const imagePreview = document.getElementById("imagePreviewContainer");
+
+  fileInput.addEventListener("change", function () {
+    if (this.files && this.files[0]) {
+      fileNameDisplay.textContent = this.files[0].name;
+
+      // Create image preview
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        imagePreview.innerHTML = `<img src="${e.target.result}" id="imagePreview" style="width: 100%; height: 100%; object-fit: cover;">`;
+      };
+      reader.readAsDataURL(this.files[0]);
+    } else {
+      fileNameDisplay.textContent = "No file chosen";
+    }
+  });
+
+  // Close button
+  editModal.querySelector(".close").addEventListener("click", () => {
+    document.body.removeChild(editModal);
+  });
+
+  // Form submission
+  document
+    .getElementById("editMemberForm")
     .addEventListener("submit", function (event) {
       event.preventDefault();
+
       const imageInput = document.getElementById("editMemberImage");
-      let imageData = member.image;
-      if (imageInput.files[0]) {
+      let imageData = member.image; // Keep existing image by default
+
+      if (imageInput.files && imageInput.files[0]) {
         const reader = new FileReader();
         reader.onload = function (e) {
-          imageData = e.target.result;
+          imageData = e.target.result; // Update with new image data
           updateMemberData(memberId, imageData);
         };
         reader.readAsDataURL(imageInput.files[0]);
@@ -350,131 +370,453 @@ function editMember(memberId) {
         room: document.getElementById("editMemberRoom").value,
         joinDate: document.getElementById("editMemberJoinDate").value,
         note: document.getElementById("editMemberNote").value,
-        image: imageData,
+        image: imageData, // Save the image data permanently
       };
-      saveData();
+
+      saveData(); // Save to localStorage
       updateMembersList();
       updateTransactionMemberFilter();
       updateMemberCheckboxes();
       showMemberDetails(memberId);
+
+      // Remove modal
       document.body.removeChild(editModal);
       alert("Member updated successfully.");
     }
   }
+}
 
-  editModal.querySelector(".close").addEventListener("click", () => {
-    document.body.removeChild(editModal);
+// Helper function to calculate total bills for a member across all months
+function calculateTotalBills(memberId) {
+  let total = 0;
+  Object.values(memberMonthDetails[memberId] || {}).forEach((month) => {
+    total += month.bills.reduce((sum, bill) => {
+      const share =
+        bill.distribution === "equal"
+          ? bill.amount / bill.memberIds.length
+          : bill.customDistribution?.find((d) => d.memberId === memberId)
+              ?.amount || 0;
+      return sum + share;
+    }, 0);
   });
+  return total;
 }
 
-function deleteMember(memberId) {
-  if (
-    !confirm(
-      "Are you sure you want to delete this member and all related data?"
-    )
-  )
-    return;
-
-  members = members.filter((member) => member.id !== memberId);
-  bills = bills.map((bill) => ({
-    ...bill,
-    memberIds: bill.memberIds.filter((id) => id !== memberId),
-    paidBy: bill.paidBy.filter((p) => p.memberId !== memberId),
-  }));
-  bills = bills.filter((bill) => bill.memberIds.length > 0);
-  transactions = transactions.filter(
-    (transaction) => transaction.memberId !== memberId
-  );
-  delete memberMonthDetails[memberId];
-
-  saveData();
-  updateMembersList();
-  updateDashboard();
-  updateBillsList();
-  updateTransactionsList();
-  updateTransactionMemberFilter();
-  updateMemberCheckboxes();
-
-  document.getElementById("backToMembersList")?.click();
-  alert("Member deleted successfully.");
+// Helper function to calculate total payments for a member across all months
+function calculateTotalPayments(memberId) {
+  let total = 0;
+  Object.values(memberMonthDetails[memberId] || {}).forEach((month) => {
+    total += month.transactions
+      .filter((t) => t.type === "payment")
+      .reduce((sum, t) => sum + t.amount, 0);
+  });
+  return total;
 }
 
-// Initialize member form and search
-document.addEventListener("DOMContentLoaded", function () {
-  // Member search
-  document
-    .getElementById("memberSearch")
-    ?.addEventListener("input", function () {
-      updateMembersList(this.value);
-    });
+// Helper function to calculate total balance for a member across all months
+function calculateTotalBalance(memberId) {
+  return calculateTotalPayments(memberId) - calculateTotalBills(memberId);
+}
 
-  // Add member form submission
-  const addMemberForm = document.getElementById("addMemberForm");
-  if (addMemberForm) {
-    addMemberForm.addEventListener("submit", function (event) {
-      event.preventDefault();
-      const imageInput = document.getElementById("memberImage");
-      let imageData = "";
-      if (imageInput.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          imageData = e.target.result;
-          addNewMember(imageData);
-        };
-        reader.readAsDataURL(imageInput.files[0]);
-      } else {
-        addNewMember(imageData);
-      }
-    });
-  }
+// Generate financial summary cards
+function generateMemberFinancialSummary(memberId) {
+  // Get the most recent 3 months
+  const recentMonths = months
+    .sort((a, b) => new Date(b.startDate) - new Date(a.startDate))
+    .slice(0, 3);
 
-  // Back to members list button
-  document
-    .getElementById("backToMembersList")
-    ?.addEventListener("click", function () {
-      document.getElementById("membersListSection").style.display = "block";
-      document.getElementById("memberDetailSection").style.display = "none";
-    });
+  return recentMonths
+    .map((month) => {
+      const monthDetails = memberMonthDetails[memberId]?.[month.value] || {
+        bills: [],
+        transactions: [],
+        balance: 0,
+        dues: 0,
+      };
 
-  // View toggle in members list
-  const viewToggleBtns = document.querySelectorAll(".view-toggle .toggle-btn");
-  viewToggleBtns.forEach((btn) => {
-    btn.addEventListener("click", function () {
-      viewToggleBtns.forEach((b) => b.classList.remove("active"));
+      const owed = monthDetails.bills.reduce((sum, bill) => {
+        const share =
+          bill.distribution === "equal"
+            ? bill.amount / bill.memberIds.length
+            : bill.customDistribution?.find((d) => d.memberId === memberId)
+                ?.amount || 0;
+        return sum + share;
+      }, 0);
+
+      const paid = monthDetails.transactions
+        .filter((t) => t.type === "payment")
+        .reduce((sum, t) => sum + t.amount, 0);
+
+      const balance = paid - owed;
+
+      return `
+      <div class="financial-card" style="background: white; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); padding: 16px; margin-bottom: 16px; transition: transform 0.3s ease; position: relative; overflow: hidden;">
+        <div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: ${
+          balance >= 0 ? "#2ecc71" : "#e74c3c"
+        };"></div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h4 style="font-size: 16px; margin: 0; color: #2c3e50;">${
+            month.name
+          }</h4>
+          <span class="${
+            balance >= 0 ? "positive" : "negative"
+          }" style="font-weight: bold; color: ${
+        balance >= 0 ? "#2ecc71" : "#e74c3c"
+      };">
+            ${balance.toFixed(1)} USD
+          </span>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; font-size: 14px;">
+          <div style="flex: 1; min-width: 120px;">
+            <div style="color: #7f8c8d; margin-bottom: 2px;">Total Bills</div>
+            <div style="font-weight: bold;">${owed.toFixed(1)} USD</div>
+          </div>
+          <div style="flex: 1; min-width: 120px;">
+            <div style="color: #7f8c8d; margin-bottom: 2px;">Total Paid</div>
+            <div style="font-weight: bold;">${paid.toFixed(1)} USD</div>
+          </div>
+          <div style="flex: 1; min-width: 120px;">
+            <div style="color: #7f8c8d; margin-bottom: 2px;">Open Bills</div>
+            <div style="font-weight: bold;">${
+              monthDetails.bills.filter((b) => !b.paidStatus).length
+            }</div>
+          </div>
+        </div>
+      </div>
+    `;
+    })
+    .join("");
+}
+
+// Generate monthly tab structure
+function generateMonthlyTabs(memberId) {
+  // Create tabs
+  const tabsHtml = `
+    <div class="tabs" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
+      ${months
+        .map(
+          (month, index) => `
+        <div class="month-tab ${index === 0 ? "active" : ""}" data-month="${
+            month.value
+          }" style="padding: 8px 16px; border-radius: 50px; background: ${
+            index === 0
+              ? "linear-gradient(to right, #3498db, #2980b9)"
+              : "#f1f2f6"
+          }; color: ${
+            index === 0 ? "white" : "#7f8c8d"
+          }; font-size: 14px; cursor: pointer; transition: all 0.3s ease; box-shadow: ${
+            index === 0 ? "0 4px 10px rgba(0,0,0,0.1)" : "none"
+          };">
+          ${month.name}
+        </div>
+      `
+        )
+        .join("")}
+    </div>
+    
+    <div class="tab-content">
+      ${months
+        .map(
+          (month, index) => `
+        <div class="month-content" data-month="${
+          month.value
+        }" style="display: ${index === 0 ? "block" : "none"};">
+          ${generateMonthContent(memberId, month.value)}
+        </div>
+      `
+        )
+        .join("")}
+    </div>
+  `;
+
+  return tabsHtml;
+}
+
+// Initialize tab switching functionality
+function initializeMonthlyTabs() {
+  const tabs = document.querySelectorAll(".month-tab");
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", function () {
+      // Remove active class from all tabs
+      tabs.forEach((t) => {
+        t.classList.remove("active");
+        t.style.background = "#f1f2f6";
+        t.style.color = "#7f8c8d";
+        t.style.boxShadow = "none";
+      });
+
+      // Add active class to clicked tab
       this.classList.add("active");
+      this.style.background = "linear-gradient(to right, #3498db, #2980b9)";
+      this.style.color = "white";
+      this.style.boxShadow = "0 4px 10px rgba(0,0,0,0.1)";
 
-      const view = this.getAttribute("data-view");
-      const membersList = document.getElementById("membersList");
-      membersList.className = "member-list " + view + "-view";
+      // Hide all content
+      const contents = document.querySelectorAll(".month-content");
+      contents.forEach((content) => {
+        content.style.display = "none";
+      });
+
+      // Show selected content
+      const monthValue = this.getAttribute("data-month");
+      document.querySelector(
+        `.month-content[data-month="${monthValue}"]`
+      ).style.display = "block";
     });
   });
-});
+}
 
-function addNewMember(imageData) {
-  const newMember = {
-    id: Date.now(),
-    name: document.getElementById("memberName")?.value,
-    phone: document.getElementById("memberPhone")?.value,
-    room: document.getElementById("memberRoom")?.value,
-    joinDate: document.getElementById("memberJoinDate")?.value,
-    note: document.getElementById("memberNote")?.value,
-    image: imageData,
+// Generate detailed month content
+function generateMonthContent(memberId, monthValue) {
+  const monthDetails = memberMonthDetails[memberId]?.[monthValue] || {
+    bills: [],
+    transactions: [],
+    balance: 0,
+    dues: 0,
   };
-  members.push(newMember);
-  memberMonthDetails[newMember.id] = {};
-  months.forEach((month) => {
-    memberMonthDetails[newMember.id][month.value] = {
-      bills: [],
-      transactions: [],
-      balance: 0,
-      dues: 0,
-    };
-  });
-  saveData();
-  updateMembersList();
-  updateMemberCheckboxes();
-  updateTransactionMemberFilter();
-  updateDashboard();
-  document.getElementById("addMemberForm").reset();
-  alert("Member added successfully.");
+
+  // Calculate totals
+  const totalOwed = monthDetails.bills.reduce((sum, bill) => {
+    const share =
+      bill.distribution === "equal"
+        ? bill.amount / bill.memberIds.length
+        : bill.customDistribution?.find((d) => d.memberId === memberId)
+            ?.amount || 0;
+    return sum + share;
+  }, 0);
+
+  const totalPaid = monthDetails.transactions
+    .filter((t) => t.type === "payment")
+    .reduce((sum, t) => sum + t.amount, 0);
+
+  const balance = totalPaid - totalOwed;
+
+  return `
+    <div class="month-summary" style="margin-bottom: 24px; background: white; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); padding: 20px; overflow: hidden; position: relative;">
+      <div style="position: absolute; top: 0; left: 0; height: 4px; width: 100%; background: linear-gradient(to right, #3498db, #2ecc71);"></div>
+      <h4 style="font-size: 18px; margin-bottom: 15px; color: #2c3e50;">Monthly Summary</h4>
+      
+      <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+        <div class="summary-card" style="flex: 1; min-width: 200px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+          <div style="color: #7f8c8d; font-size: 14px; margin-bottom: 5px;">Total Owed</div>
+          <div style="font-size: 20px; font-weight: bold; color: #34495e;">${totalOwed.toFixed(
+            1
+          )} USD</div>
+        </div>
+        
+        <div class="summary-card" style="flex: 1; min-width: 200px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+          <div style="color: #7f8c8d; font-size: 14px; margin-bottom: 5px;">Total Paid</div>
+          <div style="font-size: 20px; font-weight: bold; color: #34495e;">${totalPaid.toFixed(
+            1
+          )} USD</div>
+        </div>
+        
+        <div class="summary-card" style="flex: 1; min-width: 200px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+          <div style="color: #7f8c8d; font-size: 14px; margin-bottom: 5px;">Balance</div>
+          <div style="font-size: 20px; font-weight: bold; color: ${
+            balance >= 0 ? "#2ecc71" : "#e74c3c"
+          };">
+            ${balance.toFixed(1)} USD
+            <small style="font-size: 12px; opacity: 0.7;">${
+              balance >= 0 ? "(Credit)" : "(Due)"
+            }</small>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bills-section" style="margin-bottom: 24px; background: white; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); padding: 20px; overflow: hidden; position: relative;">
+      <div style="position: absolute; top: 0; left: 0; height: 4px; width: 100%; background: linear-gradient(to right, #e74c3c, #f39c12);"></div>
+      <h4 style="font-size: 18px; margin-bottom: 15px; color: #2c3e50;">
+        <i class="fas fa-file-invoice-dollar" style="color: #e74c3c; margin-right: 8px;"></i>
+        Bills
+      </h4>
+      
+      ${
+        monthDetails.bills.length > 0
+          ? `<div class="bills-list" style="display: flex; flex-direction: column; gap: 10px;">
+            ${monthDetails.bills
+              .map((bill) => {
+                const share =
+                  bill.distribution === "equal"
+                    ? bill.amount / bill.memberIds.length
+                    : bill.customDistribution?.find(
+                        (d) => d.memberId === memberId
+                      )?.amount || 0;
+
+                const paid = bill.paidBy
+                  .filter((p) => p.memberId === memberId)
+                  .reduce((sum, p) => sum + p.amount, 0);
+
+                const due = share - paid;
+
+                return `
+                <div class="bill-item" style="background: #f8f9fa; border-radius: 8px; padding: 15px; position: relative; transition: all 0.3s ease; border-left: 4px solid ${
+                  bill.paidStatus ? "#2ecc71" : "#f39c12"
+                };">
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <div>
+                      <h5 style="margin: 0; font-size: 16px; color: #2c3e50;">${
+                        bill.name
+                      }</h5>
+                      <span style="display: block; font-size: 13px; color: #7f8c8d; margin-top: 4px;">
+                        <i class="fas fa-calendar-day" style="margin-right: 4px;"></i>
+                        ${formatDate(bill.date)}
+                        ${
+                          bill.dueDate
+                            ? ` | Due: ${formatDate(bill.dueDate)}`
+                            : ""
+                        }
+                      </span>
+                    </div>
+                    <div>
+                      <span class="status-badge ${
+                        bill.paidStatus ? "paid" : "pending"
+                      }" style="padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; background: ${
+                  bill.paidStatus ? "#e8f5e9" : "#fff3e0"
+                }; color: ${bill.paidStatus ? "#2e7d32" : "#e65100"};">
+                        ${bill.paidStatus ? "Paid" : "Pending"}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 10px;">
+                    <div style="min-width: 100px;">
+                      <div style="font-size: 12px; color: #7f8c8d;">Your Share</div>
+                      <div style="font-weight: bold;">${share.toFixed(
+                        1
+                      )} USD</div>
+                    </div>
+                    <div style="min-width: 100px;">
+                      <div style="font-size: 12px; color: #7f8c8d;">Paid</div>
+                      <div style="font-weight: bold;">${paid.toFixed(
+                        1
+                      )} USD</div>
+                    </div>
+                    <div style="min-width: 100px;">
+                      <div style="font-size: 12px; color: #7f8c8d;">Remaining</div>
+                      <div style="font-weight: bold; color: ${
+                        due <= 0 ? "#2ecc71" : "#e74c3c"
+                      };">${due.toFixed(1)} USD</div>
+                    </div>
+                  </div>
+                  
+                  ${
+                    bill.note
+                      ? `<div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e0e0e0; font-size: 13px; color: #7f8c8d;">
+                        <i class="fas fa-sticky-note" style="margin-right: 5px;"></i> ${bill.note}
+                      </div>`
+                      : ""
+                  }
+                </div>
+              `;
+              })
+              .join("")}
+          </div>`
+          : `<div style="text-align: center; padding: 30px 0; color: #95a5a6;">
+            <i class="fas fa-file-invoice" style="font-size: 40px; margin-bottom: 10px; opacity: 0.3;"></i>
+            <p>No bills assigned for this month.</p>
+          </div>`
+      }
+    </div>
+    
+    <div class="transactions-section" style="margin-bottom: 24px; background: white; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); padding: 20px; overflow: hidden; position: relative;">
+      <div style="position: absolute; top: 0; left: 0; height: 4px; width: 100%; background: linear-gradient(to right, #2ecc71, #3498db);"></div>
+      <h4 style="font-size: 18px; margin-bottom: 15px; color: #2c3e50;">
+        <i class="fas fa-exchange-alt" style="color: #2ecc71; margin-right: 8px;"></i>
+        Transactions
+      </h4>
+      
+      ${
+        monthDetails.transactions.length > 0
+          ? `<div class="transactions-list" style="display: flex; flex-direction: column; gap: 10px;">
+            ${monthDetails.transactions
+              .map((transaction) => {
+                let typeIcon, typeColor, bgColor;
+
+                switch (transaction.type) {
+                  case "payment":
+                    typeIcon = "fa-money-bill-wave";
+                    typeColor = "#27ae60";
+                    bgColor = "#e8f5e9";
+                    break;
+                  case "expense":
+                    typeIcon = "fa-shopping-cart";
+                    typeColor = "#e74c3c";
+                    bgColor = "#ffebee";
+                    break;
+                  case "deposit":
+                    typeIcon = "fa-piggy-bank";
+                    typeColor = "#3498db";
+                    bgColor = "#e3f2fd";
+                    break;
+                  default:
+                    typeIcon = "fa-exchange-alt";
+                    typeColor = "#7f8c8d";
+                    bgColor = "#f5f5f5";
+                }
+
+                const typeText =
+                  {
+                    payment: "Payment",
+                    expense: "Expense",
+                    deposit: "Deposit",
+                  }[transaction.type] || transaction.type;
+
+                return `
+                <div class="transaction-item" style="background: #f8f9fa; border-radius: 8px; padding: 15px; position: relative; transition: all 0.3s ease; display: flex; align-items: center; gap: 15px;">
+                  <div style="width: 40px; height: 40px; border-radius: 50%; background: ${bgColor}; display: flex; align-items: center; justify-content: center; color: ${typeColor};">
+                    <i class="fas ${typeIcon}"></i>
+                  </div>
+                  
+                  <div style="flex-grow: 1;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                      <div style="font-weight: bold; color: #2c3e50;">${typeText}</div>
+                      <div style="font-weight: bold; color: ${typeColor};">${transaction.amount.toFixed(
+                  1
+                )} USD</div>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between;">
+                      <div style="font-size: 13px; color: #7f8c8d;">
+                        <i class="fas fa-calendar-day" style="margin-right: 4px;"></i>
+                        ${formatDate(transaction.date)}
+                      </div>
+                      
+                      ${
+                        transaction.billIds && transaction.billIds.length > 0
+                          ? `<div style="font-size: 13px; color: #7f8c8d;">
+                            <i class="fas fa-file-invoice" style="margin-right: 4px;"></i>
+                            Bills: ${transaction.billIds
+                              .map((id) => {
+                                const bill = bills.find((b) => b.id === id);
+                                return bill ? bill.name : "Unknown";
+                              })
+                              .join(", ")}
+                          </div>`
+                          : ""
+                      }
+                    </div>
+                    
+                    ${
+                      transaction.note
+                        ? `<div style="margin-top: 5px; font-size: 13px; color: #7f8c8d;">
+                          <i class="fas fa-sticky-note" style="margin-right: 4px;"></i>
+                          ${transaction.note}
+                        </div>`
+                        : ""
+                    }
+                  </div>
+                </div>
+              `;
+              })
+              .join("")}
+          </div>`
+          : `<div style="text-align: center; padding: 30px 0; color: #95a5a6;">
+            <i class="fas fa-exchange-alt" style="font-size: 40px; margin-bottom: 10px; opacity: 0.3;"></i>
+            <p>No transactions recorded for this month.</p>
+          </div>`
+      }
+    </div>
+  `;
 }

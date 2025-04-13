@@ -516,51 +516,6 @@ document
     alert("লেনদেন সফলভাবে যোগ করা হয়েছে।");
   });
 
-// Add new month button
-document
-  .getElementById("addNewMonthBtn")
-  .addEventListener("click", function () {
-    document.getElementById("addMonthModal").style.display = "block";
-  });
-
-// Add month form submission
-document
-  .getElementById("addMonthForm")
-  .addEventListener("submit", function (event) {
-    event.preventDefault();
-
-    const newMonth = {
-      id: Date.now(),
-      name: document.getElementById("newMonthName").value,
-      value: "month-" + Date.now(),
-      startDate: document.getElementById("newMonthStartDate").value,
-      endDate: document.getElementById("newMonthEndDate").value,
-    };
-
-    months.push(newMonth);
-    currentMonth = newMonth.value;
-
-    // Copy settings from previous month if selected
-    const copyFromMonthValue = document.getElementById("copyFromMonth").value;
-    if (copyFromMonthValue) {
-      // TODO: Implement copy functionality for recurring bills
-    }
-
-    saveData();
-
-    updateMonthTabs();
-    updateMonthSelector();
-    updateDashboard();
-
-    // Close modal
-    document.getElementById("addMonthModal").style.display = "none";
-
-    // Reset form
-    this.reset();
-
-    // Show success message
-    alert("নতুন মাস সফলভাবে যোগ করা হয়েছে।");
-  });
 // Update bills list
 function updateBillsList() {
   const billsContainer = document.getElementById("billsList");
@@ -839,6 +794,10 @@ function deleteMember(memberId) {
 
 // Core functionality for the Home Manager application
 
+// Core functionality for the Home Manager application
+
+// Core functionality for the Home Manager application
+
 // Data structures
 let members = [];
 let months = [];
@@ -859,26 +818,50 @@ let settings = {
 let currentMonth = "";
 let memberMonthDetails = {}; // Stores detailed month-wise data per member
 
-// Initialize sample data
-function initializeSampleData() {
-  const now = new Date();
-  months = [
-    {
-      id: Date.now(),
-      name: `${now.toLocaleString("en-US", {
-        month: "long",
-      })} ${now.getFullYear()}`,
-      value: `month-${now.getFullYear()}-${now.getMonth() + 1}`,
-      startDate: new Date(now.getFullYear(), now.getMonth(), 1)
-        .toISOString()
-        .split("T")[0],
-      endDate: new Date(now.getFullYear(), now.getMonth() + 1, 0)
-        .toISOString()
-        .split("T")[0],
-    },
+// Initialize months with all 12 months of the current year
+function initializeMonths() {
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  const monthNames = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
   ];
 
-  currentMonth = months[0].value;
+  // Clear existing months
+  months = [];
+
+  // Add all 12 months of the current year
+  for (let i = 0; i < 12; i++) {
+    const startDate = new Date(currentYear, i, 1);
+    const endDate = new Date(currentYear, i + 1, 0);
+
+    months.push({
+      id: Date.now() + i,
+      name: `${monthNames[i]} ${currentYear}`,
+      value: `month-${currentYear}-${i + 1}`,
+      startDate: startDate.toISOString().split("T")[0],
+      endDate: endDate.toISOString().split("T")[0],
+    });
+  }
+
+  // Set current month as the current calendar month
+  const currentMonthIndex = currentDate.getMonth();
+  currentMonth = months[currentMonthIndex].value;
+}
+
+// Initialize sample data
+function initializeSampleData() {
+  // Months are already initialized in initializeMonths()
 
   members = [
     {
@@ -955,15 +938,25 @@ function initializeSampleData() {
     },
   ];
 
+  ensureMemberMonthDetails();
+}
+
+// Ensure each member has month details for all months
+function ensureMemberMonthDetails() {
   members.forEach((member) => {
-    memberMonthDetails[member.id] = {};
+    if (!memberMonthDetails[member.id]) {
+      memberMonthDetails[member.id] = {};
+    }
+
     months.forEach((month) => {
-      memberMonthDetails[member.id][month.value] = {
-        bills: [],
-        transactions: [],
-        balance: 0,
-        dues: 0,
-      };
+      if (!memberMonthDetails[member.id][month.value]) {
+        memberMonthDetails[member.id][month.value] = {
+          bills: [],
+          transactions: [],
+          balance: 0,
+          dues: 0,
+        };
+      }
     });
   });
 }
@@ -972,21 +965,30 @@ function initializeSampleData() {
 function loadData() {
   const savedData = {
     members: localStorage.getItem("basharHishabMembers"),
-    months: localStorage.getItem("basharHishabMonths"),
-    bills: localStorage.getItem("basharHishabBills"),
     transactions: localStorage.getItem("basharHishabTransactions"),
+    bills: localStorage.getItem("basharHishabBills"),
     settings: localStorage.getItem("basharHishabSettings"),
     memberMonthDetails: localStorage.getItem("basharHishabMemberMonthDetails"),
   };
 
   try {
-    if (Object.values(savedData).every((data) => data)) {
+    // Initialize months first
+    initializeMonths();
+
+    if (
+      savedData.members &&
+      savedData.transactions &&
+      savedData.bills &&
+      savedData.settings
+    ) {
       members = JSON.parse(savedData.members);
-      months = JSON.parse(savedData.months);
       bills = JSON.parse(savedData.bills);
       transactions = JSON.parse(savedData.transactions);
       settings = JSON.parse(savedData.settings);
-      memberMonthDetails = JSON.parse(savedData.memberMonthDetails);
+
+      if (savedData.memberMonthDetails) {
+        memberMonthDetails = JSON.parse(savedData.memberMonthDetails);
+      }
 
       // Ensure settings object has all necessary properties
       settings.customCategories = settings.customCategories || [];
@@ -999,8 +1001,6 @@ function loadData() {
         camera: 145,
         maidBill: 100,
       };
-
-      currentMonth = months.length > 0 ? months[0].value : "";
     } else {
       initializeSampleData();
     }
@@ -1008,6 +1008,9 @@ function loadData() {
     console.error("Error loading data:", error);
     initializeSampleData();
   }
+
+  // Make sure all members have month details for all months
+  ensureMemberMonthDetails();
   updateMemberMonthDetails();
   saveData();
 }
@@ -1138,29 +1141,17 @@ function initializeUI() {
   updateQuickAddBillModal();
 }
 
+// Month tabs update (optional, can be hidden)
 function updateMonthTabs() {
   const monthTabsContainer = document.getElementById("monthTabs");
   if (!monthTabsContainer) return;
 
-  monthTabsContainer.innerHTML = "";
-  months.forEach((month) => {
-    const tab = document.createElement("div");
-    tab.className = `month-tab ${month.value === currentMonth ? "active" : ""}`;
-    tab.textContent = month.name;
-    tab.setAttribute("data-month", month.value);
-    tab.addEventListener("click", function () {
-      currentMonth = this.getAttribute("data-month");
-      updateMonthTabs();
-      updateDashboard();
-      updateBillsList();
-      updateTransactionsList();
-      document.getElementById("currentMonthDisplay").textContent =
-        getMonthByValue(currentMonth)?.name || "";
-    });
-    monthTabsContainer.appendChild(tab);
-  });
+  // You can hide this container as it's not needed anymore
+  monthTabsContainer.style.display = "none";
+  return;
 }
 
+// Update month selector with all months
 function updateMonthSelector() {
   const selectors = [
     document.getElementById("monthSelect"),
@@ -1177,14 +1168,12 @@ function updateMonthSelector() {
       ? '<option value="all">All Months</option>'
       : "";
 
-    months
-      .sort((a, b) => new Date(b.startDate) - new Date(a.startDate))
-      .forEach((month) => {
-        const option = document.createElement("option");
-        option.value = month.value;
-        option.textContent = month.name;
-        selector.appendChild(option);
-      });
+    months.forEach((month) => {
+      const option = document.createElement("option");
+      option.value = month.value;
+      option.textContent = month.name;
+      selector.appendChild(option);
+    });
 
     if (selector.id === "monthSelect") selector.value = currentMonth;
   });
@@ -1304,7 +1293,6 @@ function setupMonthHandling() {
     .getElementById("monthSelect")
     ?.addEventListener("change", function () {
       currentMonth = this.value;
-      updateMonthTabs();
       updateDashboard();
       const displayElement = document.getElementById("currentMonthDisplay");
       if (displayElement) {
@@ -1312,58 +1300,23 @@ function setupMonthHandling() {
       }
     });
 
-  // Add new month button
-  document
-    .getElementById("addNewMonthBtn")
-    ?.addEventListener("click", function () {
-      document.getElementById("addMonthModal").style.display = "block";
+  // Hide or remove the Add New Month button as it's not needed
+  const addNewMonthBtn = document.getElementById("addNewMonthBtn");
+  if (addNewMonthBtn) {
+    addNewMonthBtn.style.display = "none";
+  }
+
+  // Hide Add Month modal or repurpose it
+  const addMonthModal = document.getElementById("addMonthModal");
+  if (addMonthModal) {
+    // Hide it as it's not needed
+    const addMonthBtns = document.querySelectorAll(
+      '[data-target="#addMonthModal"]'
+    );
+    addMonthBtns.forEach((btn) => {
+      btn.style.display = "none";
     });
-
-  // Add month form submission
-  document
-    .getElementById("addMonthForm")
-    ?.addEventListener("submit", function (event) {
-      event.preventDefault();
-
-      const newMonth = {
-        id: Date.now(),
-        name: document.getElementById("newMonthName").value,
-        value: "month-" + Date.now(),
-        startDate: document.getElementById("newMonthStartDate").value,
-        endDate: document.getElementById("newMonthEndDate").value,
-      };
-
-      months.unshift(newMonth); // Add to beginning of array
-      currentMonth = newMonth.value;
-
-      // Create member month details
-      members.forEach((member) => {
-        if (!memberMonthDetails[member.id]) {
-          memberMonthDetails[member.id] = {};
-        }
-        memberMonthDetails[member.id][newMonth.value] = {
-          bills: [],
-          transactions: [],
-          balance: 0,
-          dues: 0,
-        };
-      });
-
-      saveData();
-
-      updateMonthTabs();
-      updateMonthSelector();
-      updateDashboard();
-
-      // Close modal
-      document.getElementById("addMonthModal").style.display = "none";
-
-      // Reset form
-      this.reset();
-
-      // Show success message
-      alert("New month added successfully.");
-    });
+  }
 }
 
 // Tab navigation setup
@@ -1522,6 +1475,76 @@ function showToast(message, type = "info") {
     });
 }
 
+// Auto-generate recurring bills
+function generateRecurringBillsForMonth(monthValue) {
+  const month = getMonthByValue(monthValue);
+  if (!month) return;
+
+  const recurringBills = settings.recurringBills || [];
+  const today = new Date();
+  const monthStart = new Date(month.startDate);
+  if (
+    today.getMonth() === monthStart.getMonth() &&
+    today.getFullYear() === monthStart.getFullYear()
+  ) {
+    recurringBills.forEach((recurringBill) => {
+      const existingBill = bills.find(
+        (bill) =>
+          bill.month === monthValue &&
+          bill.name === recurringBill.name &&
+          bill.category === recurringBill.category &&
+          bill.amount === recurringBill.amount &&
+          bill.memberIds.length === recurringBill.memberIds.length &&
+          bill.memberIds.every((id) => recurringBill.memberIds.includes(id))
+      );
+
+      if (!existingBill) {
+        const dueDate = new Date(
+          monthStart.getFullYear(),
+          monthStart.getMonth(),
+          Math.min(
+            recurringBill.dueDay,
+            new Date(
+              monthStart.getFullYear(),
+              monthStart.getMonth() + 1,
+              0
+            ).getDate()
+          )
+        );
+        const newBill = {
+          id: Date.now(),
+          name: recurringBill.name,
+          category: recurringBill.category,
+          month: monthValue,
+          amount: recurringBill.amount,
+          date: month.startDate,
+          dueDate: dueDate.toISOString().split("T")[0],
+          note: "Auto-generated recurring bill",
+          memberIds: recurringBill.memberIds,
+          distribution: recurringBill.distribution,
+          customDistribution: null,
+          paidStatus: false,
+          paidBy: [],
+        };
+        bills.push(newBill);
+      }
+    });
+    saveData();
+    updateMemberMonthDetails();
+    updateBillsList();
+    updateDashboard();
+  }
+}
+
+function deleteRecurringBill(billId) {
+  if (!confirm("Are you sure you want to delete this recurring bill?")) return;
+  settings.recurringBills = settings.recurringBills.filter(
+    (bill) => bill.id !== billId
+  );
+  saveData();
+  alert("Recurring bill deleted successfully.");
+}
+
 // Main initialization
 document.addEventListener("DOMContentLoaded", function () {
   try {
@@ -1576,3 +1599,654 @@ document.addEventListener("DOMContentLoaded", function () {
     );
   }
 });
+
+// Default bill settings form submission
+document
+  .getElementById("defaultBillSettingsForm")
+  .addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    settings.defaultBills = {
+      wifiBill: parseFloat(document.getElementById("defaultWifiBill").value),
+      gasBill: parseFloat(document.getElementById("defaultGasBill").value),
+      moylarBill: parseFloat(
+        document.getElementById("defaultMoylarBill").value
+      ),
+      currentBill: parseFloat(
+        document.getElementById("defaultCurrentBill").value
+      ),
+      camera: parseFloat(document.getElementById("defaultCamera").value),
+      buwaBill: parseFloat(document.getElementById("defaultBuwaBill").value),
+    };
+
+    saveData();
+
+    // Show success message
+    alert("ডিফল্ট সেটিংস সফলভাবে সংরক্ষণ করা হয়েছে।");
+  });
+
+// Bill category selection
+document.querySelectorAll(".category-item").forEach((item) => {
+  item.addEventListener("click", function () {
+    // Remove active class from all items
+    document.querySelectorAll(".category-item").forEach((i) => {
+      i.classList.remove("active");
+    });
+
+    // Add active class to clicked item
+    this.classList.add("active");
+
+    // Update bills list
+    updateBillsList();
+  });
+});
+
+// Bill month filter
+document
+  .getElementById("billMonthFilter")
+  .addEventListener("change", function () {
+    updateBillsList();
+  });
+
+// Transaction filters
+document
+  .getElementById("transactionMonthFilter")
+  .addEventListener("change", updateTransactionsList);
+document
+  .getElementById("transactionTypeFilter")
+  .addEventListener("change", updateTransactionsList);
+document
+  .getElementById("transactionMemberFilter")
+  .addEventListener("change", updateTransactionsList);
+
+// Member search
+document.getElementById("memberSearch").addEventListener("input", function () {
+  updateMembersList();
+});
+
+// Global search
+document
+  .getElementById("globalSearch")
+  .addEventListener("keyup", function (event) {
+    if (event.key === "Enter") {
+      performGlobalSearch(this.value);
+    }
+  });
+
+// Quick add buttons
+document
+  .getElementById("quickAddBillBtn")
+  .addEventListener("click", function () {
+    document.getElementById("quickAddBillModal").style.display = "block";
+  });
+
+document
+  .getElementById("quickAddMemberBtn")
+  .addEventListener("click", function () {
+    document.querySelector('.tab-button[data-tab="members"]').click();
+    document.getElementById("memberName").focus();
+  });
+
+document
+  .getElementById("quickAddTransactionBtn")
+  .addEventListener("click", function () {
+    document.querySelector('.tab-button[data-tab="transactions"]').click();
+    document.getElementById("transactionAmount").focus();
+  });
+
+// Quick add bill items
+document.querySelectorAll(".bill-item[data-bill]").forEach((item) => {
+  item.addEventListener("click", function () {
+    const billType = this.getAttribute("data-bill");
+
+    if (billType === "custom") {
+      // Go to bills tab for custom bill
+      document.querySelector('.tab-button[data-tab="bills"]').click();
+      document.getElementById("billName").focus();
+      document.getElementById("quickAddBillModal").style.display = "none";
+      return;
+    }
+
+    // Add standard bill based on type
+    let billName, billAmount, billCategory;
+
+    switch (billType) {
+      case "wifi":
+        billName = "ওয়াইফাই বিল";
+        billAmount = settings.defaultBills.wifiBill;
+        billCategory = "utility";
+        break;
+      case "gas":
+        billName = "গ্যাস বিল";
+        billAmount = settings.defaultBills.gasBill;
+        billCategory = "utility";
+        break;
+      case "moylar":
+        billName = "ময়লার বিল";
+        billAmount = settings.defaultBills.moylarBill;
+        billCategory = "utility";
+        break;
+      case "current":
+        billName = "কারেন্ট বিল";
+        billAmount = settings.defaultBills.currentBill;
+        billCategory = "utility";
+        break;
+      case "buwa":
+        billName = "বুয়া বিল";
+        billAmount = settings.defaultBills.buwaBill;
+        billCategory = "buwa";
+        break;
+      case "camera":
+        billName = "ক্যামেরা";
+        billAmount = settings.defaultBills.camera;
+        billCategory = "utility";
+        break;
+    }
+
+    // Add bill for all members
+    const memberIds = members.map((member) => member.id);
+
+    const newBill = {
+      id: Date.now(),
+      name: billName,
+      category: billCategory,
+      month: currentMonth,
+      amount: billAmount,
+      date: new Date().toISOString().split("T")[0],
+      note: "",
+      memberIds: memberIds,
+      distribution: "equal",
+      customDistribution: null,
+      paidStatus: false,
+    };
+
+    bills.push(newBill);
+    saveData();
+
+    updateBillsList();
+    updateDashboard();
+
+    document.getElementById("quickAddBillModal").style.display = "none";
+
+    // Show success message
+    alert("বিল সফলভাবে যোগ করা হয়েছে।");
+  });
+});
+
+// Data export
+document.getElementById("exportData").addEventListener("click", function () {
+  const exportData = {
+    members: members,
+    months: months,
+    bills: bills,
+    transactions: transactions,
+    settings: settings,
+  };
+
+  const dataStr =
+    "data:text/json;charset=utf-8," +
+    encodeURIComponent(JSON.stringify(exportData));
+  const downloadAnchorNode = document.createElement("a");
+  downloadAnchorNode.setAttribute("href", dataStr);
+  downloadAnchorNode.setAttribute("download", "basharHishab_export.json");
+  document.body.appendChild(downloadAnchorNode);
+  downloadAnchorNode.click();
+  downloadAnchorNode.remove();
+
+  alert("ডাটা সফলভাবে এক্সপোর্ট করা হয়েছে।");
+});
+
+// Data import
+document.getElementById("importData").addEventListener("click", function () {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = ".json";
+  input.addEventListener("change", function (event) {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+
+    reader.onload = function (e) {
+      try {
+        const importedData = JSON.parse(e.target.result);
+
+        if (
+          importedData.members &&
+          importedData.bills &&
+          importedData.transactions &&
+          importedData.settings
+        ) {
+          // Import all data
+          members = importedData.members;
+          bills = importedData.bills;
+          transactions = importedData.transactions;
+          settings = importedData.settings;
+
+          // We'll keep our current months setup based on current year
+          // but update the current month to match the imported data if needed
+          if (importedData.months && importedData.months.length > 0) {
+            // Find a matching month in our system
+            const firstImportedMonth = importedData.months[0];
+            const matchingMonth = months.find(
+              (m) => m.name.includes(firstImportedMonth.name.split(" ")[0]) // Match month name
+            );
+
+            if (matchingMonth) {
+              currentMonth = matchingMonth.value;
+            }
+          }
+
+          saveData();
+
+          // Make sure all members have month details
+          ensureMemberMonthDetails();
+          updateMemberMonthDetails();
+
+          // Update UI
+          updateMonthTabs();
+          updateMonthSelector();
+          updateMembersList();
+          updateDashboard();
+          updateBillsList();
+          updateTransactionsList();
+          updateTransactionMemberFilter();
+          updateMemberCheckboxes();
+
+          alert("ডাটা সফলভাবে ইম্পোর্ট করা হয়েছে।");
+        } else {
+          alert("অবৈধ ডাটা ফাইল! সঠিক ফরম্যাটে সংরক্ষিত ফাইল আপলোড করুন।");
+        }
+      } catch (error) {
+        console.error("Error parsing file:", error);
+        alert("ফাইল পার্স করতে সমস্যা হয়েছে: " + error.message);
+      }
+    };
+
+    reader.readAsText(file);
+  });
+
+  input.click();
+});
+
+// Clear all data
+document.getElementById("clearData").addEventListener("click", function () {
+  if (
+    confirm(
+      "আপনি কি নিশ্চিত যে আপনি সব ডাটা মুছে ফেলতে চান? এই পদক্ষেপ ফিরিয়ে আনা যাবে না!"
+    )
+  ) {
+    localStorage.removeItem("basharHishabMembers");
+    localStorage.removeItem("basharHishabMonths");
+    localStorage.removeItem("basharHishabBills");
+    localStorage.removeItem("basharHishabTransactions");
+    localStorage.removeItem("basharHishabSettings");
+    localStorage.removeItem("basharHishabMemberMonthDetails");
+
+    // Reload page
+    window.location.reload();
+  }
+});
+
+// Close modals when clicking on X or outside
+document.querySelectorAll(".close").forEach((closeBtn) => {
+  closeBtn.addEventListener("click", function () {
+    document.querySelectorAll(".modal").forEach((modal) => {
+      modal.style.display = "none";
+    });
+  });
+});
+
+window.addEventListener("click", function (event) {
+  document.querySelectorAll(".modal").forEach((modal) => {
+    if (event.target === modal) {
+      modal.style.display = "none";
+    }
+  });
+});
+
+// Initialize month selector
+document.getElementById("monthSelect").addEventListener("change", function () {
+  currentMonth = this.value;
+  updateDashboard();
+  document.getElementById("currentMonthDisplay").textContent =
+    getMonthByValue(currentMonth).name;
+});
+
+// Edit bill
+function editBill(billId) {
+  // Get the bill to edit
+  const bill = bills.find((b) => b.id === billId);
+  if (!bill) return;
+
+  // Create modal for editing
+  const editModal = document.createElement("div");
+  editModal.className = "modal";
+  editModal.innerHTML = `
+    <div class="modal-content">
+      <span class="close">×</span>
+      <h2>Edit Bill</h2>
+      <form id="editBillForm">
+        <div class="form-group">
+          <label for="editBillName">Bill Name</label>
+          <input type="text" id="editBillName" value="${bill.name}" required>
+        </div>
+        <div class="form-group">
+          <label for="editBillCategory">Category</label>
+          <select id="editBillCategory">
+            <option value="rent" ${
+              bill.category === "rent" ? "selected" : ""
+            }>Rent</option>
+            <option value="utility" ${
+              bill.category === "utility" ? "selected" : ""
+            }>Utility</option>
+            <option value="meal" ${
+              bill.category === "meal" ? "selected" : ""
+            }>Meal</option>
+            <option value="service" ${
+              bill.category === "service" ? "selected" : ""
+            }>Service</option>
+            <option value="other" ${
+              bill.category === "other" ? "selected" : ""
+            }>Other</option>
+            ${settings.customCategories
+              .map(
+                (cat) =>
+                  `<option value="${cat.id}" ${
+                    bill.category === cat.id ? "selected" : ""
+                  }>${cat.name}</option>`
+              )
+              .join("")}
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="editBillAmount">Amount (USD)</label>
+          <input type="number" id="editBillAmount" value="${
+            bill.amount
+          }" step="0.01" required>
+        </div>
+        <div class="form-group">
+          <label for="editBillDate">Date</label>
+          <input type="date" id="editBillDate" value="${bill.date}" required>
+        </div>
+        <div class="form-group">
+          <label for="editBillDueDate">Due Date</label>
+          <input type="date" id="editBillDueDate" value="${bill.dueDate || ""}">
+        </div>
+        <div class="form-group">
+          <label for="editBillNote">Note</label>
+          <textarea id="editBillNote">${bill.note || ""}</textarea>
+        </div>
+        <div class="form-group">
+          <label>Members</label>
+          <div id="editBillMembers" class="checkbox-group" style="max-height: 150px; overflow-y: auto; border: 1px solid #ddd; padding: 8px; border-radius: 4px;"></div>
+        </div>
+        <div class="form-group">
+          <label for="editBillPaidStatus">Payment Status</label>
+          <select id="editBillPaidStatus">
+            <option value="false" ${
+              !bill.paidStatus ? "selected" : ""
+            }>Pending</option>
+            <option value="true" ${
+              bill.paidStatus ? "selected" : ""
+            }>Paid</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Update Bill</button>
+      </form>
+    </div>
+  `;
+
+  document.body.appendChild(editModal);
+  editModal.style.display = "block";
+
+  // Fill the members checkboxes
+  const membersContainer = document.getElementById("editBillMembers");
+  members.forEach((member) => {
+    const div = document.createElement("div");
+    div.innerHTML = `
+      <label>
+        <input type="checkbox" name="editBillMembers" value="${member.id}" 
+          ${bill.memberIds.includes(member.id) ? "checked" : ""}> ${member.name}
+      </label>
+    `;
+    membersContainer.appendChild(div);
+  });
+
+  // Form submission
+  document
+    .getElementById("editBillForm")
+    .addEventListener("submit", function (e) {
+      e.preventDefault();
+      const selectedMembers = Array.from(
+        document.querySelectorAll('input[name="editBillMembers"]:checked')
+      ).map((checkbox) => parseInt(checkbox.value));
+
+      if (selectedMembers.length === 0) {
+        alert("Please select at least one member.");
+        return;
+      }
+
+      // Update bill data
+      const index = bills.findIndex((b) => b.id === billId);
+      if (index !== -1) {
+        bills[index] = {
+          ...bills[index],
+          name: document.getElementById("editBillName").value,
+          category: document.getElementById("editBillCategory").value,
+          amount: parseFloat(document.getElementById("editBillAmount").value),
+          date: document.getElementById("editBillDate").value,
+          dueDate: document.getElementById("editBillDueDate").value,
+          note: document.getElementById("editBillNote").value,
+          memberIds: selectedMembers,
+          paidStatus:
+            document.getElementById("editBillPaidStatus").value === "true",
+        };
+
+        saveData();
+        updateMemberMonthDetails();
+        updateBillsList();
+        updateDashboard();
+
+        document.body.removeChild(editModal);
+        alert("Bill updated successfully.");
+      }
+    });
+
+  // Close button
+  editModal.querySelector(".close").addEventListener("click", function () {
+    document.body.removeChild(editModal);
+  });
+}
+
+// Edit transaction
+function editTransaction(transactionId) {
+  // Get the transaction to edit
+  const transaction = transactions.find((t) => t.id === transactionId);
+  if (!transaction) return;
+
+  // Create modal for editing
+  const editModal = document.createElement("div");
+  editModal.className = "modal";
+  editModal.innerHTML = `
+    <div class="modal-content">
+      <span class="close">×</span>
+      <h2>Edit Transaction</h2>
+      <form id="editTransactionForm">
+        <div class="form-group">
+          <label for="editTransactionType">Type</label>
+          <select id="editTransactionType">
+            <option value="payment" ${
+              transaction.type === "payment" ? "selected" : ""
+            }>Payment</option>
+            <option value="expense" ${
+              transaction.type === "expense" ? "selected" : ""
+            }>Expense</option>
+            <option value="deposit" ${
+              transaction.type === "deposit" ? "selected" : ""
+            }>Deposit</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="editTransactionMember">Member</label>
+          <select id="editTransactionMember">
+            ${members
+              .map(
+                (member) =>
+                  `<option value="${member.id}" ${
+                    transaction.memberId === member.id ? "selected" : ""
+                  }>${member.name}</option>`
+              )
+              .join("")}
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="editTransactionAmount">Amount (USD)</label>
+          <input type="number" id="editTransactionAmount" value="${
+            transaction.amount
+          }" step="0.01" required>
+        </div>
+        <div class="form-group">
+          <label for="editTransactionDate">Date</label>
+          <input type="date" id="editTransactionDate" value="${
+            transaction.date
+          }" required>
+        </div>
+        <div class="form-group">
+          <label for="editTransactionNote">Note</label>
+          <textarea id="editTransactionNote">${
+            transaction.note || ""
+          }</textarea>
+        </div>
+        <div id="editRelatedBillsContainer" class="form-group" ${
+          transaction.type !== "payment" ? 'style="display:none;"' : ""
+        }>
+          <label>Related Bills</label>
+          <div id="editTransactionBills" class="checkbox-group" style="max-height: 150px; overflow-y: auto; border: 1px solid #ddd; padding: 8px; border-radius: 4px;"></div>
+        </div>
+        <button type="submit" class="btn btn-primary">Update Transaction</button>
+      </form>
+    </div>
+  `;
+
+  document.body.appendChild(editModal);
+  editModal.style.display = "block";
+
+  // Fill the related bills checkboxes if payment
+  if (transaction.type === "payment") {
+    const billsContainer = document.getElementById("editTransactionBills");
+    bills
+      .filter(
+        (b) =>
+          b.month === transaction.month &&
+          b.memberIds.includes(transaction.memberId)
+      )
+      .forEach((bill) => {
+        const div = document.createElement("div");
+        div.innerHTML = `
+        <label>
+          <input type="checkbox" name="editTransactionBills" value="${bill.id}" 
+            ${transaction.billIds?.includes(bill.id) ? "checked" : ""}> ${
+          bill.name
+        }
+        </label>
+      `;
+        billsContainer.appendChild(div);
+      });
+  }
+
+  // Change type handler
+  document
+    .getElementById("editTransactionType")
+    .addEventListener("change", function () {
+      const billsContainer = document.getElementById(
+        "editRelatedBillsContainer"
+      );
+      billsContainer.style.display =
+        this.value === "payment" ? "block" : "none";
+    });
+
+  // Form submission
+  document
+    .getElementById("editTransactionForm")
+    .addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      // Get selected bills if payment
+      const selectedBills = [];
+      if (document.getElementById("editTransactionType").value === "payment") {
+        document
+          .querySelectorAll('input[name="editTransactionBills"]:checked')
+          .forEach((checkbox) => {
+            selectedBills.push(parseInt(checkbox.value));
+          });
+      }
+
+      // Update transaction
+      const index = transactions.findIndex((t) => t.id === transactionId);
+      if (index !== -1) {
+        transactions[index] = {
+          ...transactions[index],
+          type: document.getElementById("editTransactionType").value,
+          memberId: parseInt(
+            document.getElementById("editTransactionMember").value
+          ),
+          amount: parseFloat(
+            document.getElementById("editTransactionAmount").value
+          ),
+          date: document.getElementById("editTransactionDate").value,
+          note: document.getElementById("editTransactionNote").value,
+          billIds: selectedBills,
+        };
+
+        saveData();
+        updateMemberMonthDetails();
+        updateTransactionsList();
+        updateBillsList();
+        updateDashboard();
+
+        document.body.removeChild(editModal);
+        alert("Transaction updated successfully.");
+      }
+    });
+
+  // Close button
+  editModal.querySelector(".close").addEventListener("click", function () {
+    document.body.removeChild(editModal);
+  });
+}
+
+// Global search function
+function performGlobalSearch(searchTerm) {
+  if (!searchTerm) return;
+
+  // Search for members
+  const matchedMembers = members.filter((member) =>
+    member.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  if (matchedMembers.length === 1) {
+    // If exactly one member matched, show their details
+    document.querySelector('.tab-button[data-tab="members"]').click();
+    showMemberDetails(matchedMembers[0].id);
+    return;
+  } else if (matchedMembers.length > 1) {
+    // If multiple members matched, show the list with filter applied
+    document.querySelector('.tab-button[data-tab="members"]').click();
+    updateMembersList(searchTerm);
+    return;
+  }
+
+  // Search for bills by name
+  const matchedBills = bills.filter((bill) =>
+    bill.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  if (matchedBills.length > 0) {
+    // Show bills tab with relevant bills
+    document.querySelector('.tab-button[data-tab="bills"]').click();
+    updateBillsList(searchTerm);
+    return;
+  }
+
+  // If nothing found
+  alert("কোন সদস্য বা বিল পাওয়া যায়নি। অনুগ্রহ করে অনুসন্ধান পরিবর্তন করুন।");
+}
