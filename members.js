@@ -77,7 +77,7 @@ function updateMembersList(searchTerm = "") {
   });
 }
 
-// Update showMemberDetails function in members.js
+// Function to show member details with improved layout
 function showMemberDetails(memberId) {
   const member = getMemberById(memberId);
   if (!member) return;
@@ -94,30 +94,61 @@ function showMemberDetails(memberId) {
   // Professional member profile with comprehensive history
   detailContainer.innerHTML = `
     <div class="member-profile-card" style="background: linear-gradient(135deg, #ffffff, #f8f9fa); border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; margin-bottom: 24px; position: relative;">
-      <div class="profile-header" style="background: linear-gradient(135deg, #3498db, #2980b9); padding: 30px 20px; color: white; position: relative;">
-        <div class="profile-pic" style="position: relative; width: 120px; height: 120px; margin: 0 auto; border-radius: 50%; border: 5px solid white; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+      <div class="profile-header" style="display: flex; align-items: flex-start; background: linear-gradient(135deg, #3498db, #2980b9); padding: 30px 20px; color: white; position: relative;">
+        <div class="profile-pic" style="position: relative; width: 180px; height: 180px; margin-right: 30px; border-radius: 10px; border: 5px solid white; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
           ${
             member.image
               ? `<img src="${member.image}" alt="${member.name}" style="width: 100%; height: 100%; object-fit: cover;">`
-              : `<div class="avatar" style="width: 100%; height: 100%; background: linear-gradient(135deg, #3498db, #8e44ad); display: flex; align-items: center; justify-content: center; font-size: 48px; font-weight: bold; color: white;">${member.name.charAt(
+              : `<div class="avatar" style="width: 100%; height: 100%; background: linear-gradient(135deg, #3498db, #8e44ad); display: flex; align-items: center; justify-content: center; font-size: 80px; font-weight: bold; color: white;">${member.name.charAt(
                   0
                 )}</div>`
           }
         </div>
-        <h2 style="text-align: center; margin-top: 15px; font-size: 24px; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">${
-          member.name
-        }</h2>
-        <div class="member-tags" style="display: flex; justify-content: center; gap: 10px; margin-top: 8px;">
-          <span style="background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 20px; font-size: 12px;">
-            <i class="fas fa-home" style="margin-right: 5px;"></i> Room ${
-              member.room || "N/A"
-            }
-          </span>
-          <span style="background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 20px; font-size: 12px;">
-            <i class="fas fa-phone" style="margin-right: 5px;"></i> ${
-              member.phone || "N/A"
-            }
-          </span>
+        <div class="profile-info" style="flex: 1;">
+          <h2 style="margin-top: 0; font-size: 28px; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">${
+            member.name
+          }</h2>
+          <div class="member-tags" style="display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap;">
+            <span style="background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 20px; font-size: 14px;">
+              <i class="fas fa-home" style="margin-right: 5px;"></i> রুম ${
+                member.room || "N/A"
+              }
+            </span>
+            <span style="background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 20px; font-size: 14px;">
+              <i class="fas fa-phone" style="margin-right: 5px;"></i> ${
+                member.phone || "N/A"
+              }
+            </span>
+            <span style="background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 20px; font-size: 14px;">
+              <i class="fas fa-calendar-alt" style="margin-right: 5px;"></i> ${formatDate(
+                member.joinDate
+              )} থেকে সদস্য
+            </span>
+          </div>
+          
+          <div class="financial-summary" style="margin-top: 20px; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px;">
+            <h3 style="margin-top: 0; font-size: 18px; margin-bottom: 15px;">আর্থিক সারাংশ</h3>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+              <div style="background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px; text-align: center;">
+                <div style="font-size: 14px; margin-bottom: 5px;">মোট বিল</div>
+                <div style="font-size: 20px; font-weight: bold;">${calculateTotalBills(
+                  memberId
+                ).toFixed(1)} ৳</div>
+              </div>
+              <div style="background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px; text-align: center;">
+                <div style="font-size: 14px; margin-bottom: 5px;">মোট পেমেন্ট</div>
+                <div style="font-size: 20px; font-weight: bold;">${calculateTotalPayments(
+                  memberId
+                ).toFixed(1)} ৳</div>
+              </div>
+              <div style="background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px; text-align: center;">
+                <div style="font-size: 14px; margin-bottom: 5px;">বর্তমান ব্যালেন্স</div>
+                <div style="font-size: 20px; font-weight: bold; color: ${
+                  calculateTotalBalance(memberId) >= 0 ? "#2ecc71" : "#e74c3c"
+                };">${calculateTotalBalance(memberId).toFixed(1)} ৳</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       
@@ -125,41 +156,67 @@ function showMemberDetails(memberId) {
         <div class="stat-item" style="text-align: center;">
           <div style="font-size: 24px; font-weight: bold; color: #3498db;">${calculateTotalBills(
             memberId
-          ).toFixed(1)}</div>
-          <div style="color: #7f8c8d; font-size: 14px;">Total Bills</div>
+          ).toFixed(1)} ৳</div>
+          <div style="color: #7f8c8d; font-size: 14px;">মোট বিল</div>
         </div>
         <div class="stat-item" style="text-align: center;">
           <div style="font-size: 24px; font-weight: bold; color: #2ecc71;">${calculateTotalPayments(
             memberId
-          ).toFixed(1)}</div>
-          <div style="color: #7f8c8d; font-size: 14px;">Total Paid</div>
+          ).toFixed(1)} ৳</div>
+          <div style="color: #7f8c8d; font-size: 14px;">মোট পরিশোধিত</div>
         </div>
         <div class="stat-item" style="text-align: center;">
           <div style="font-size: 24px; font-weight: bold; color: ${
             calculateTotalBalance(memberId) >= 0 ? "#2ecc71" : "#e74c3c"
-          };">${calculateTotalBalance(memberId).toFixed(1)}</div>
-          <div style="color: #7f8c8d; font-size: 14px;">Balance</div>
+          };">${calculateTotalBalance(memberId).toFixed(1)} ৳</div>
+          <div style="color: #7f8c8d; font-size: 14px;">ব্যালেন্স</div>
         </div>
       </div>
       
       <div class="profile-info" style="padding: 20px;">
-        <div style="margin-bottom: 12px;">
-          <span style="display: block; font-size: 14px; color: #7f8c8d; margin-bottom: 4px;">Member Since</span>
-          <div style="font-size: 16px; display: flex; align-items: center;">
-            <i class="fas fa-calendar-alt" style="color: #3498db; margin-right: 8px;"></i>
-            ${formatDate(member.joinDate)}
+        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+          <div style="flex: 1; min-width: 180px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+            <div style="display: flex; align-items: center; margin-bottom: 10px;">
+              <i class="fas fa-money-bill-wave" style="color: #2ecc71; margin-right: 8px; font-size: 18px;"></i>
+              <div style="font-weight: bold; font-size: 16px;">বাকি বিল</div>
+            </div>
+            <div style="font-size: 24px; font-weight: bold; color: ${
+              calculateMemberDues(memberId) > 0 ? "#e74c3c" : "#2ecc71"
+            };">${calculateMemberDues(memberId).toFixed(1)} ৳</div>
+          </div>
+          
+          <div style="flex: 1; min-width: 180px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+            <div style="display: flex; align-items: center; margin-bottom: 10px;">
+              <i class="fas fa-exclamation-circle" style="color: #e74c3c; margin-right: 8px; font-size: 18px;"></i>
+              <div style="font-weight: bold; font-size: 16px;">অবশিষ্ট পেমেন্ট</div>
+            </div>
+            <div style="font-size: 24px; font-weight: bold; color: ${
+              calculateMemberDues(memberId) > 0 ? "#e74c3c" : "#2ecc71"
+            };">${Math.max(0, calculateMemberDues(memberId)).toFixed(1)} ৳</div>
+          </div>
+          
+          <div style="flex: 1; min-width: 180px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+            <div style="display: flex; align-items: center; margin-bottom: 10px;">
+              <i class="fas fa-file-invoice-dollar" style="color: #3498db; margin-right: 8px; font-size: 18px;"></i>
+              <div style="font-weight: bold; font-size: 16px;">মোট বিল সংখ্যা</div>
+            </div>
+            <div style="font-size: 24px; font-weight: bold; color: #3498db;">
+              ${
+                bills.filter((bill) => bill.memberIds.includes(memberId)).length
+              }
+            </div>
           </div>
         </div>
         
         ${
           member.note
             ? `
-            <div style="margin-bottom: 12px;">
-              <span style="display: block; font-size: 14px; color: #7f8c8d; margin-bottom: 4px;">Notes</span>
-              <div style="font-size: 16px; display: flex; align-items: start;">
-                <i class="fas fa-sticky-note" style="color: #3498db; margin-right: 8px; margin-top: 3px;"></i>
-                <span>${member.note}</span>
+            <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+              <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                <i class="fas fa-sticky-note" style="color: #f39c12; margin-right: 8px; font-size: 18px;"></i>
+                <div style="font-weight: bold; font-size: 16px;">নোট</div>
               </div>
+              <div>${member.note}</div>
             </div>
             `
             : ""
@@ -167,22 +224,10 @@ function showMemberDetails(memberId) {
       </div>
     </div>
 
-    <div class="member-financial-history" style="margin-bottom: 24px;">
-      <h3 style="position: relative; font-size: 18px; margin-bottom: 20px; padding-bottom: 10px; color: #2c3e50;">
-        <i class="fas fa-chart-line" style="color: #3498db; margin-right: 8px;"></i>
-        Financial History
-        <span style="position: absolute; bottom: 0; left: 0; width: 50px; height: 3px; background: linear-gradient(90deg, #3498db, #2ecc71);"></span>
-      </h3>
-      
-      <div class="financial-cards">
-        ${generateMemberFinancialSummary(memberId)}
-      </div>
-    </div>
-    
     <div class="monthly-details-tabs">
       <h3 style="position: relative; font-size: 18px; margin-bottom: 20px; padding-bottom: 10px; color: #2c3e50;">
         <i class="fas fa-calendar-alt" style="color: #3498db; margin-right: 8px;"></i>
-        Monthly Details
+        মাসিক হিসাব
         <span style="position: absolute; bottom: 0; left: 0; width: 50px; height: 3px; background: linear-gradient(90deg, #3498db, #9b59b6);"></span>
       </h3>
       
@@ -193,10 +238,10 @@ function showMemberDetails(memberId) {
     
     <div class="actions" style="display: flex; gap: 12px; margin-top: 30px;">
       <button onclick="editMember(${memberId})" class="btn btn-primary" style="background: linear-gradient(to right, #3498db, #2980b9); border: none; padding: 10px 20px; border-radius: 50px; color: white; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px;">
-        <i class="fas fa-user-edit"></i> Edit Member
+        <i class="fas fa-user-edit"></i> সদস্য সম্পাদনা
       </button>
       <button onclick="deleteMember(${memberId})" class="btn btn-danger" style="background: linear-gradient(to right, #e74c3c, #c0392b); border: none; padding: 10px 20px; border-radius: 50px; color: white; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px;">
-        <i class="fas fa-user-minus"></i> Delete Member
+        <i class="fas fa-user-minus"></i> সদস্য মুছুন
       </button>
     </div>
   `;
@@ -204,6 +249,505 @@ function showMemberDetails(memberId) {
   // Initialize tabs interactivity after adding to DOM
   initializeMonthlyTabs();
 }
+
+// Generate monthly tab structure
+function generateMonthlyTabs(memberId) {
+  // Create tabs
+  const tabsHtml = `
+    <div class="tabs" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; overflow-x: auto;">
+      ${months
+        .map(
+          (month, index) => `
+        <div class="month-tab ${index === 0 ? "active" : ""}" data-month="${
+            month.value
+          }" style="padding: 8px 16px; border-radius: 50px; background: ${
+            index === 0
+              ? "linear-gradient(to right, #3498db, #2980b9)"
+              : "#f1f2f6"
+          }; color: ${
+            index === 0 ? "white" : "#7f8c8d"
+          }; font-size: 14px; cursor: pointer; transition: all 0.3s ease; box-shadow: ${
+            index === 0 ? "0 4px 10px rgba(0,0,0,0.1)" : "none"
+          };">
+          ${month.name}
+        </div>
+      `
+        )
+        .join("")}
+    </div>
+    
+    <div class="tab-content">
+      ${months
+        .map(
+          (month, index) => `
+        <div class="month-content" data-month="${
+          month.value
+        }" style="display: ${index === 0 ? "block" : "none"};">
+          ${generateMonthContent(memberId, month.value)}
+        </div>
+      `
+        )
+        .join("")}
+    </div>
+  `;
+
+  return tabsHtml;
+}
+
+// Initialize tab switching functionality
+function initializeMonthlyTabs() {
+  const tabs = document.querySelectorAll(".month-tab");
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", function () {
+      // Remove active class from all tabs
+      tabs.forEach((t) => {
+        t.classList.remove("active");
+        t.style.background = "#f1f2f6";
+        t.style.color = "#7f8c8d";
+        t.style.boxShadow = "none";
+      });
+
+      // Add active class to clicked tab
+      this.classList.add("active");
+      this.style.background = "linear-gradient(to right, #3498db, #2980b9)";
+      this.style.color = "white";
+      this.style.boxShadow = "0 4px 10px rgba(0,0,0,0.1)";
+
+      // Hide all content
+      const contents = document.querySelectorAll(".month-content");
+      contents.forEach((content) => {
+        content.style.display = "none";
+      });
+
+      // Show selected content
+      const monthValue = this.getAttribute("data-month");
+      document.querySelector(
+        `.month-content[data-month="${monthValue}"]`
+      ).style.display = "block";
+    });
+  });
+}
+
+// Generate detailed month content
+function generateMonthContent(memberId, monthValue) {
+  const monthDetails = memberMonthDetails[memberId]?.[monthValue] || {
+    bills: [],
+    transactions: [],
+    balance: 0,
+    dues: 0,
+  };
+
+  // Calculate totals
+  const totalOwed = monthDetails.bills.reduce((sum, bill) => {
+    const share =
+      bill.distribution === "equal"
+        ? bill.amount / bill.memberIds.length
+        : bill.customDistribution?.find((d) => d.memberId === memberId)
+            ?.amount || 0;
+    return sum + share;
+  }, 0);
+
+  const totalPaid = monthDetails.transactions
+    .filter((t) => t.type === "payment")
+    .reduce((sum, t) => sum + t.amount, 0);
+
+  const balance = totalPaid - totalOwed;
+
+  return `
+    <div class="month-summary" style="margin-bottom: 24px; background: white; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); padding: 20px; overflow: hidden; position: relative;">
+      <div style="position: absolute; top: 0; left: 0; height: 4px; width: 100%; background: linear-gradient(to right, #3498db, #2ecc71);"></div>
+      <h4 style="font-size: 18px; margin-bottom: 15px; color: #2c3e50;">মাসিক সারাংশ</h4>
+      
+      <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+        <div class="summary-card" style="flex: 1; min-width: 200px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+          <div style="color: #7f8c8d; font-size: 14px; margin-bottom: 5px;">মোট দেনা</div>
+          <div style="font-size: 20px; font-weight: bold; color: #34495e;">${totalOwed.toFixed(
+            1
+          )} ৳</div>
+        </div>
+        
+        <div class="summary-card" style="flex: 1; min-width: 200px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+          <div style="color: #7f8c8d; font-size: 14px; margin-bottom: 5px;">মোট পরিশোধিত</div>
+          <div style="font-size: 20px; font-weight: bold; color: #34495e;">${totalPaid.toFixed(
+            1
+          )} ৳</div>
+        </div>
+        
+        <div class="summary-card" style="flex: 1; min-width: 200px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+          <div style="color: #7f8c8d; font-size: 14px; margin-bottom: 5px;">ব্যালেন্স</div>
+          <div style="font-size: 20px; font-weight: bold; color: ${
+            balance >= 0 ? "#2ecc71" : "#e74c3c"
+          };">
+            ${balance.toFixed(1)} ৳
+            <small style="font-size: 12px; opacity: 0.7;">${
+              balance >= 0 ? "(জমা)" : "(বাকি)"
+            }</small>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bills-section" style="margin-bottom: 24px; background: white; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); padding: 20px; overflow: hidden; position: relative;">
+      <div style="position: absolute; top: 0; left: 0; height: 4px; width: 100%; background: linear-gradient(to right, #e74c3c, #f39c12);"></div>
+      <h4 style="font-size: 18px; margin-bottom: 15px; color: #2c3e50;">
+        <i class="fas fa-file-invoice-dollar" style="color: #e74c3c; margin-right: 8px;"></i>
+        বিলসমূহ
+      </h4>
+      
+      ${
+        monthDetails.bills.length > 0
+          ? `<div class="bills-list" style="display: flex; flex-direction: column; gap: 10px;">
+            ${monthDetails.bills
+              .map((bill) => {
+                const share =
+                  bill.distribution === "equal"
+                    ? bill.amount / bill.memberIds.length
+                    : bill.customDistribution?.find(
+                        (d) => d.memberId === memberId
+                      )?.amount || 0;
+
+                const paid = bill.paidBy
+                  .filter((p) => p.memberId === memberId)
+                  .reduce((sum, p) => sum + p.amount, 0);
+
+                const due = share - paid;
+
+                return `
+                <div class="bill-item" style="background: #f8f9fa; border-radius: 8px; padding: 15px; position: relative; transition: all 0.3s ease; border-left: 4px solid ${
+                  bill.paidStatus ? "#2ecc71" : "#f39c12"
+                };">
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <div>
+                      <h5 style="margin: 0; font-size: 16px; color: #2c3e50;">${
+                        bill.name
+                      }</h5>
+                      <span style="display: block; font-size: 13px; color: #7f8c8d; margin-top: 4px;">
+                        <i class="fas fa-calendar-day" style="margin-right: 4px;"></i>
+                        ${formatDate(bill.date)}
+                        ${
+                          bill.dueDate
+                            ? ` | শেষ তারিখ: ${formatDate(bill.dueDate)}`
+                            : ""
+                        }
+                      </span>
+                    </div>
+                    <div>
+                      <span class="status-badge ${
+                        bill.paidStatus ? "paid" : "pending"
+                      }" style="padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; background: ${
+                  bill.paidStatus ? "#e8f5e9" : "#fff3e0"
+                }; color: ${bill.paidStatus ? "#2e7d32" : "#e65100"};">
+                        ${bill.paidStatus ? "পরিশোধিত" : "বাকি"}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 10px;">
+                    <div style="min-width: 100px;">
+                      <div style="font-size: 12px; color: #7f8c8d;">আপনার অংশ</div>
+                      <div style="font-weight: bold;">${share.toFixed(
+                        1
+                      )} ৳</div>
+                    </div>
+                    <div style="min-width: 100px;">
+                      <div style="font-size: 12px; color: #7f8c8d;">পরিশোধিত</div>
+                      <div style="font-weight: bold;">${paid.toFixed(1)} ৳</div>
+                    </div>
+                    <div style="min-width: 100px;">
+                      <div style="font-size: 12px; color: #7f8c8d;">বাকি</div>
+                      <div style="font-weight: bold; color: ${
+                        due <= 0 ? "#2ecc71" : "#e74c3c"
+                      };">${due.toFixed(1)} ৳</div>
+                    </div>
+                  </div>
+                  
+                  ${
+                    bill.note
+                      ? `<div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e0e0e0; font-size: 13px; color: #7f8c8d;">
+                        <i class="fas fa-sticky-note" style="margin-right: 5px;"></i> ${bill.note}
+                      </div>`
+                      : ""
+                  }
+                </div>
+              `;
+              })
+              .join("")}
+          </div>`
+          : `<div style="text-align: center; padding: 30px 0; color: #95a5a6;">
+            <i class="fas fa-file-invoice" style="font-size: 40px; margin-bottom: 10px; opacity: 0.3;"></i>
+            <p>এই মাসে কোন বিল নেই।</p>
+          </div>`
+      }
+    </div>
+    
+    <div class="transactions-section" style="margin-bottom: 24px; background: white; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); padding: 20px; overflow: hidden; position: relative;">
+      <div style="position: absolute; top: 0; left: 0; height: 4px; width: 100%; background: linear-gradient(to right, #2ecc71, #3498db);"></div>
+      <h4 style="font-size: 18px; margin-bottom: 15px; color: #2c3e50;">
+        <i class="fas fa-exchange-alt" style="color: #2ecc71; margin-right: 8px;"></i>
+        লেনদেন
+      </h4>
+      
+      ${
+        monthDetails.transactions.length > 0
+          ? `<div class="transactions-list" style="display: flex; flex-direction: column; gap: 10px;">
+            ${monthDetails.transactions
+              .map((transaction) => {
+                let typeIcon, typeColor, bgColor, typeText;
+
+                switch (transaction.type) {
+                  case "payment":
+                    typeIcon = "fa-money-bill-wave";
+                    typeColor = "#27ae60";
+                    bgColor = "#e8f5e9";
+                    typeText = "পেমেন্ট";
+                    break;
+                  case "expense":
+                    typeIcon = "fa-shopping-cart";
+                    typeColor = "#e74c3c";
+                    bgColor = "#ffebee";
+                    typeText = "খরচ";
+                    break;
+                  case "deposit":
+                    typeIcon = "fa-piggy-bank";
+                    typeColor = "#3498db";
+                    bgColor = "#e3f2fd";
+                    typeText = "জমা";
+                    break;
+                  default:
+                    typeIcon = "fa-exchange-alt";
+                    typeColor = "#7f8c8d";
+                    bgColor = "#f5f5f5";
+                    typeText = transaction.type;
+                }
+
+                return `
+                <div class="transaction-item" style="background: #f8f9fa; border-radius: 8px; padding: 15px; position: relative; transition: all 0.3s ease; display: flex; align-items: center; gap: 15px;">
+                  <div style="width: 40px; height: 40px; border-radius: 50%; background: ${bgColor}; display: flex; align-items: center; justify-content: center; color: ${typeColor};">
+                    <i class="fas ${typeIcon}"></i>
+                  </div>
+                  
+                  <div style="flex-grow: 1;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                      <div style="font-weight: bold; color: #2c3e50;">${typeText}</div>
+                      <div style="font-weight: bold; color: ${typeColor};">${transaction.amount.toFixed(
+                  1
+                )} ৳</div>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between;">
+                      <div style="font-size: 13px; color: #7f8c8d;">
+                        <i class="fas fa-calendar-day" style="margin-right: 4px;"></i>
+                        ${formatDate(transaction.date)}
+                      </div>
+                      
+                      ${
+                        transaction.billIds && transaction.billIds.length > 0
+                          ? `<div style="font-size: 13px; color: #7f8c8d;">
+                            <i class="fas fa-file-invoice" style="margin-right: 4px;"></i>
+                            বিল: ${transaction.billIds
+                              .map((id) => {
+                                const bill = bills.find((b) => b.id === id);
+                                return bill ? bill.name : "অজানা";
+                              })
+                              .join(", ")}
+                          </div>`
+                          : ""
+                      }
+                    </div>
+                    
+                    ${
+                      transaction.note
+                        ? `<div style="margin-top: 5px; font-size: 13px; color: #7f8c8d;">
+                          <i class="fas fa-sticky-note" style="margin-right: 4px;"></i>
+                          ${transaction.note}
+                        </div>`
+                        : ""
+                    }
+                  </div>
+                </div>
+              `;
+              })
+              .join("")}
+          </div>`
+          : `<div style="text-align: center; padding: 30px 0; color: #95a5a6;">
+            <i class="fas fa-exchange-alt" style="font-size: 40px; margin-bottom: 10px; opacity: 0.3;"></i>
+            <p>এই মাসে কোন লেনদেন নেই।</p>
+          </div>`
+      }
+    </div>
+  `;
+}
+
+// Helper function to calculate total bills for a member across all months
+function calculateTotalBills(memberId) {
+  let total = 0;
+  Object.values(memberMonthDetails[memberId] || {}).forEach((month) => {
+    total += month.bills.reduce((sum, bill) => {
+      const share =
+        bill.distribution === "equal"
+          ? bill.amount / bill.memberIds.length
+          : bill.customDistribution?.find((d) => d.memberId === memberId)
+              ?.amount || 0;
+      return sum + share;
+    }, 0);
+  });
+  return total;
+}
+
+// Helper function to calculate total payments for a member across all months
+function calculateTotalPayments(memberId) {
+  let total = 0;
+  Object.values(memberMonthDetails[memberId] || {}).forEach((month) => {
+    total += month.transactions
+      .filter((t) => t.type === "payment")
+      .reduce((sum, t) => sum + t.amount, 0);
+  });
+  return total;
+}
+
+// Helper function to calculate total balance for a member across all months
+function calculateTotalBalance(memberId) {
+  return calculateTotalPayments(memberId) - calculateTotalBills(memberId);
+}
+
+// Helper function to calculate dues
+function calculateMemberDues(memberId) {
+  let unpaidBills = 0;
+  Object.values(memberMonthDetails[memberId] || {}).forEach((month) => {
+    month.bills.forEach((bill) => {
+      if (!bill.paidStatus) {
+        const share =
+          bill.distribution === "equal"
+            ? bill.amount / bill.memberIds.length
+            : bill.customDistribution?.find((d) => d.memberId === memberId)
+                ?.amount || 0;
+        unpaidBills += share;
+      }
+    });
+  });
+  return unpaidBills;
+}
+
+// Format date for display in Bangla
+function formatDateBangla(dateString) {
+  if (!dateString) return "N/A";
+
+  const date = new Date(dateString);
+  // Convert to Bangla numerals and month names
+  const banglaMonths = [
+    "জানুয়ারি",
+    "ফেব্রুয়ারি",
+    "মার্চ",
+    "এপ্রিল",
+    "মে",
+    "জুন",
+    "জুলাই",
+    "আগস্ট",
+    "সেপ্টেম্বর",
+    "অক্টোবর",
+    "নভেম্বর",
+    "ডিসেম্বর",
+  ];
+
+  const day = date.getDate();
+  const month = banglaMonths[date.getMonth()];
+  const year = date.getFullYear();
+
+  // Convert to Bangla digits
+  const toBanglaDigits = (num) => {
+    const banglaDigits = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
+    return num
+      .toString()
+      .split("")
+      .map((digit) =>
+        isNaN(parseInt(digit)) ? digit : banglaDigits[parseInt(digit)]
+      )
+      .join("");
+  };
+
+  return `${toBanglaDigits(day)} ${month}, ${toBanglaDigits(year)}`;
+}
+
+// Convert any currency amount to Bangla digits
+function formatAmountBangla(amount) {
+  if (amount === null || amount === undefined) return "N/A";
+
+  const banglaDigits = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
+  const numStr = amount.toFixed(2).toString();
+
+  return numStr
+    .split("")
+    .map((char) => {
+      if (char === ".") return ".";
+      if (isNaN(parseInt(char))) return char;
+      return banglaDigits[parseInt(char)];
+    })
+    .join("");
+}
+
+// Update the bill and transaction lists to use Bangla everywhere
+function updateAllDisplaysWithBangla() {
+  // This function can be called whenever you need to update all the displays
+  // to ensure everything is shown in Bangla currency and digits
+
+  // Update dashboard totals
+  const currencyElements = document.querySelectorAll(
+    ".transaction-amount, .stat-value, .balance-info"
+  );
+  currencyElements.forEach((element) => {
+    const currentText = element.textContent;
+    if (currentText.includes("$") || currentText.includes("USD")) {
+      // Replace USD currency with BDT
+      const numericValue = parseFloat(currentText.replace(/[^0-9.-]+/g, ""));
+      if (!isNaN(numericValue)) {
+        element.textContent = `${formatAmountBangla(numericValue)} ৳`;
+      }
+    }
+  });
+
+  // Update all dates
+  const dateElements = document.querySelectorAll(".transaction-date");
+  dateElements.forEach((element) => {
+    // This is a simplified approach - in a real implementation you'd need to
+    // parse out the date and convert just that part
+    const currentText = element.textContent;
+    const datePattern = /\d{1,2} [A-Za-z]{3,}, \d{4}/;
+    const match = currentText.match(datePattern);
+    if (match) {
+      const datePart = match[0];
+      const dateObj = new Date(datePart);
+      if (!isNaN(dateObj.getTime())) {
+        element.textContent = currentText.replace(
+          datePart,
+          formatDateBangla(dateObj)
+        );
+      }
+    }
+  });
+}
+
+// This function should be called after initializing the member details
+function enhanceWithBanglaDisplay() {
+  // This ensures all currency amounts are displayed in Bangla format with ৳ symbol
+  updateAllDisplaysWithBangla();
+
+  // Also ensure new tabs initialize with Bangla display when clicked
+  document.querySelectorAll(".month-tab").forEach((tab) => {
+    tab.addEventListener("click", function () {
+      // Short timeout to allow content to render before updating display
+      setTimeout(updateAllDisplaysWithBangla, 100);
+    });
+  });
+}
+
+// Update the initialize function to use Bangla everywhere
+document.addEventListener("DOMContentLoaded", function () {
+  // Initialize all your default components
+
+  // Then apply the Bangla enhancements
+  enhanceWithBanglaDisplay();
+});
+
 function editMember(memberId) {
   const member = getMemberById(memberId);
   if (!member) return;

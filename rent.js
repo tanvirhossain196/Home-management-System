@@ -516,24 +516,26 @@ document
     alert("লেনদেন সফলভাবে যোগ করা হয়েছে।");
   });
 
-// Update bills list
+// Bill category filtering implementation
+
+// Bill Categories Click Functionality
+
+// Function to update the bills list based on selected category
 function updateBillsList() {
   const billsContainer = document.getElementById("billsList");
+  if (!billsContainer) return;
+
+  // Clear the container
   billsContainer.innerHTML = "";
 
-  // Get selected filters
-  const monthFilter = document.getElementById("billMonthFilter").value;
-  const categoryFilter = document
-    .querySelector(".category-item.active")
-    .getAttribute("data-category");
+  // Get the active category
+  const categoryFilter =
+    document
+      .querySelector(".category-item.active")
+      ?.getAttribute("data-category") || "all";
 
-  // Filter bills based on selected filters
+  // Filter bills based on the selected category
   let filteredBills = bills;
-
-  if (monthFilter !== "all") {
-    filteredBills = filteredBills.filter((bill) => bill.month === monthFilter);
-  }
-
   if (categoryFilter !== "all") {
     filteredBills = filteredBills.filter(
       (bill) => bill.category === categoryFilter
@@ -543,14 +545,33 @@ function updateBillsList() {
   // Sort bills by date (newest first)
   filteredBills.sort((a, b) => new Date(b.date) - new Date(a.date));
 
+  // Update bills stats
+  const totalBills = filteredBills.length;
+  const totalAmount = filteredBills.reduce((sum, bill) => sum + bill.amount, 0);
+  const paidAmount = filteredBills
+    .filter((bill) => bill.paidStatus)
+    .reduce((sum, bill) => sum + bill.amount, 0);
+  const outstandingAmount = totalAmount - paidAmount;
+
+  // Update the stats display
+  document.getElementById("billsTotalCount").textContent = totalBills;
+  document.getElementById(
+    "billsTotalAmount"
+  ).textContent = `$${totalAmount.toFixed(2)}`;
+  document.getElementById(
+    "billsPaidAmount"
+  ).textContent = `$${paidAmount.toFixed(2)}`;
+  document.getElementById(
+    "billsOutstandingAmount"
+  ).textContent = `$${outstandingAmount.toFixed(2)}`;
+
   // If no bills found
   if (filteredBills.length === 0) {
-    billsContainer.innerHTML =
-      "<p>কোন বিল পাওয়া যায়নি। ফিল্টার পরিবর্তন করুন।</p>";
+    billsContainer.innerHTML = "<p>No bills found for this category.</p>";
     return;
   }
 
-  // Create bill items
+  // Render each bill
   filteredBills.forEach((bill) => {
     const billItem = document.createElement("div");
     billItem.className = "transaction-item";
@@ -563,27 +584,48 @@ function updateBillsList() {
     // Get month name
     const monthName = getMonthByValue(bill.month)?.name || bill.month;
 
-    billItem.innerHTML = `
-            <div>
-                <div class="transaction-member">${bill.name}</div>
-                <div class="transaction-date">
-                    ${formatDate(bill.date)} | ${monthName}
-                </div>
-                <div><small>সদস্য: ${affectedMembers}</small></div>
-            </div>
-            <div>
-                <div class="transaction-amount">${bill.amount.toFixed(
-                  1
-                )} টাকা</div>
-                <div class="status-badge ${
-                  bill.paidStatus ? "paid" : "pending"
-                }">
-                    ${bill.paidStatus ? "পরিশোধিত" : "বাকি"}
-                </div>
-            </div>
-        `;
+    // Choose icon based on category
+    let categoryIcon;
+    switch (bill.category) {
+      case "rent":
+        categoryIcon = "fas fa-home";
+        break;
+      case "utility":
+        categoryIcon = "fas fa-bolt";
+        break;
+      case "meal":
+        categoryIcon = "fas fa-utensils";
+        break;
+      case "service":
+        categoryIcon = "fas fa-hands-helping";
+        break;
+      case "other":
+        categoryIcon = "fas fa-clipboard-list";
+        break;
+      default:
+        categoryIcon = "fas fa-file-invoice-dollar";
+    }
 
-    // Add click event to view/edit bill
+    billItem.innerHTML = `
+      <div>
+        <div class="transaction-member">
+          <i class="${categoryIcon}"></i> ${bill.name}
+        </div>
+        <div class="transaction-date">${formatDate(
+          bill.date
+        )} | ${monthName}</div>
+        <div><small>Members: ${affectedMembers}</small></div>
+        ${bill.note ? `<div><small>Note: ${bill.note}</small></div>` : ""}
+      </div>
+      <div>
+        <div class="transaction-amount">${bill.amount.toFixed(2)} USD</div>
+        <div class="status-badge ${bill.paidStatus ? "paid" : "pending"}">
+          ${bill.paidStatus ? "Paid" : "Pending"}
+        </div>
+      </div>
+    `;
+
+    // Add click event to edit bill
     billItem.addEventListener("click", function () {
       editBill(bill.id);
     });
@@ -591,6 +633,90 @@ function updateBillsList() {
     billsContainer.appendChild(billItem);
   });
 }
+
+// Initialize bill category functionality
+document.addEventListener("DOMContentLoaded", function () {
+  // Set up the click events for category items
+  document.querySelectorAll(".category-item").forEach((item) => {
+    item.addEventListener("click", function () {
+      // Remove active class from all categories
+      document.querySelectorAll(".category-item").forEach((i) => {
+        i.classList.remove("active");
+      });
+
+      // Add active class to clicked category
+      this.classList.add("active");
+
+      // Update the bills list
+      updateBillsList();
+    });
+  });
+
+  // Remove due date filter from sidebar
+  const billMonthFilter = document.getElementById("billMonthFilter");
+  if (billMonthFilter) {
+    const filterContainer = billMonthFilter.closest(".filters");
+    if (filterContainer) {
+      Array.from(filterContainer.children).forEach((child) => {
+        if (child.id === "billMonthFilter" || child.contains(billMonthFilter)) {
+          child.style.display = "none";
+        }
+      });
+    }
+  }
+
+  // Handle "Add New Bill" click
+  const addNewBillButton =
+    document.querySelector(".category-item[data-action='add-bill']") ||
+    document.querySelector(".sidebar-section a[href='#add-bill']");
+  if (addNewBillButton) {
+    addNewBillButton.addEventListener("click", function (e) {
+      e.preventDefault();
+      // Focus on the add bill form
+      document.querySelector(".tab-button[data-tab='bills']").click();
+      document.getElementById("billName")?.focus();
+    });
+  }
+
+  // Initialize with "All Bills" selected
+  const allBillsCategory = document.querySelector(
+    ".category-item[data-category='all']"
+  );
+  if (allBillsCategory) {
+    allBillsCategory.classList.add("active");
+  }
+
+  // Load initial bills list
+  updateBillsList();
+});
+
+// Initialize bill category filtering
+document.addEventListener("DOMContentLoaded", function () {
+  // Bill category selection
+  document.querySelectorAll(".category-item").forEach((item) => {
+    item.addEventListener("click", function () {
+      // Remove active class from all items
+      document.querySelectorAll(".category-item").forEach((i) => {
+        i.classList.remove("active");
+      });
+
+      // Add active class to clicked item
+      this.classList.add("active");
+
+      // Update bills list with the selected category
+      updateBillsList();
+    });
+  });
+
+  // Remove month filter if needed
+  const billMonthFilter = document.getElementById("billMonthFilter");
+  if (billMonthFilter) {
+    billMonthFilter.parentElement.style.display = "none";
+  }
+
+  // Initial load of bills with default category (all)
+  updateBillsList();
+});
 
 // Update transactions list
 function updateTransactionsList() {

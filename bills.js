@@ -1,5 +1,17 @@
 // Bills management functionality
 
+const formatCurrency = (amount) => `$${parseFloat(amount).toFixed(2)}`;
+
+// Utility function to format dates
+const formatDate = (date) => {
+  if (!date) return "N/A";
+  return new Date(date).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+};
+
 function updateBillsList(searchTerm = "") {
   const billsContainer = document.getElementById("billsList");
   if (!billsContainer) return;
