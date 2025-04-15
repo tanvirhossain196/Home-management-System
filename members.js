@@ -328,6 +328,9 @@ function initializeMonthlyTabs() {
   });
 }
 
+
+
+
 // Generate detailed month content
 function generateMonthContent(memberId, monthValue) {
   const monthDetails = memberMonthDetails[memberId]?.[monthValue] || {
